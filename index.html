@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mango Salsa Games</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, 'Segoe UI', system-ui, sans-serif;
+      background: #1a1a2e;
+      color: #eee;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 32px;
+      padding: 24px;
+    }
+    h1 {
+      font-size: clamp(1.8rem, 5vw, 2.6rem);
+      color: #ffd700;
+      text-shadow: 0 0 20px rgba(255,215,0,0.4);
+      letter-spacing: 0.06em;
+    }
+    .games {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      justify-content: center;
+    }
+    a.game-card {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      background: #16213e;
+      border-radius: 16px;
+      padding: 28px 36px;
+      text-decoration: none;
+      color: #eee;
+      transition: transform 0.15s, box-shadow 0.15s;
+      min-width: 180px;
+    }
+    a.game-card:hover, a.game-card:active {
+      transform: scale(1.04);
+      box-shadow: 0 0 24px rgba(255,215,0,0.2);
+    }
+    .game-icon { font-size: 3rem; }
+    .game-title { font-size: 1.2rem; font-weight: 700; }
+    .game-desc { font-size: 0.8rem; color: #889; text-align: center; }
+  </style>
+</head>
+<body>
+  <h1>Mango Salsa Games</h1>
+  <div class="games">
+    <a class="game-card" href="catrunner.html">
+      <div class="game-icon">🐱</div>
+      <div class="game-title">Cat Runner</div>
+      <div class="game-desc">Side-scrolling runner<br>Pick your cat &middot; Collect treats</div>
+    </a>
+    <a class="game-card" href="tictactoe.html">
+      <div class="game-icon">❌⭕</div>
+      <div class="game-title">Tic Tac Toe</div>
+      <div class="game-desc">2 players or vs CPU<br>Fireworks on win</div>
+    </a>
+  </div>
+</body>
+</html>

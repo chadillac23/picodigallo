@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tic Tac Toe</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: #1a1a2e;
+      color: #eee;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 24px;
+    }
+
+    h1 {
+      font-size: 2.4rem;
+      letter-spacing: 0.1em;
+      color: #e94560;
+    }
+
+    .scoreboard {
+      display: flex;
+      gap: 32px;
+      font-size: 1rem;
+    }
+
+    .score-box {
+      text-align: center;
+      background: #16213e;
+      border-radius: 10px;
+      padding: 12px 24px;
+      min-width: 80px;
+    }
+
+    .score-box .label {
+      font-size: 0.75rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #888;
+      margin-bottom: 4px;
+    }
+
+    .score-box .value {
+      font-size: 1.8rem;
+      font-weight: bold;
+    }
+
+    .score-box.x .value { color: #e94560; }
+    .score-box.o .value { color: #0f3460; }
+    .score-box.o .value { color: #53c0f0; }
+    .score-box.draws .value { color: #aaa; }
+
+    .status {
+      font-size: 1.2rem;
+      height: 1.6em;
+      color: #ccc;
+      transition: color 0.2s;
+    }
+
+    .status.win { color: #ffd700; font-weight: bold; }
+    .status.draw { color: #aaa; }
+
+    .board {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+
+    .cell {
+      width: 110px;
+      height: 110px;
+      background: #16213e;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 3.2rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.15s, transform 0.1s;
+      user-select: none;
+    }
+
+    .cell:hover:not(.taken) {
+      background: #0f3460;
+      transform: scale(1.05);
+    }
+
+    .cell.taken { cursor: default; }
+
+    .cell.x { color: #e94560; }
+    .cell.o { color: #53c0f0; }
+
+    .cell.win-cell {
+      background: #2a2a0a;
+      box-shadow: 0 0 0 3px #ffd700;
+    }
+
+    .controls {
+      display: flex;
+      gap: 12px;
+    }
+
+    button {
+      padding: 10px 28px;
+      border: none;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      cursor: pointer;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      transition: opacity 0.15s, transform 0.1s;
+    }
+
+    button:hover { opacity: 0.85; transform: scale(1.03); }
+    button:active { transform: scale(0.97); }
+
+    #restart {
+      background: #e94560;
+      color: #fff;
+    }
+
+    #reset-scores {
+      background: #16213e;
+      color: #aaa;
+      border: 1px solid #333;
+    }
+
+    #fireworks {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 999;
+    }
+
+    #winner-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.75);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      color: #ffd700;
+      font-size: 3.5rem;
+      font-weight: bold;
+      letter-spacing: 0.05em;
+      text-shadow: 0 0 20px rgba(255, 215, 0, 0.6);
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.4s;
+    }
+    #winner-overlay.show { opacity: 1; }
+
+    #begin-popup {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0, 0, 0, 0.8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 2000;
+      opacity: 1;
+      transition: opacity 0.6s ease-out;
+    }
+
+    #begin-popup.fade-out {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    #begin-popup .begin-text {
+      font-size: 5rem;
+      font-weight: bold;
+      color: #ffd700;
+      text-shadow: 0 0 30px rgba(255, 215, 0, 0.7), 0 0 60px rgba(255, 215, 0, 0.4);
+      letter-spacing: 0.15em;
+      animation: beginPulse 1s ease-in-out infinite alternate;
+    }
+
+    @keyframes beginPulse {
+      from { transform: scale(1); text-shadow: 0 0 30px rgba(255, 215, 0, 0.7), 0 0 60px rgba(255, 215, 0, 0.4); }
+      to { transform: scale(1.08); text-shadow: 0 0 40px rgba(255, 215, 0, 0.9), 0 0 80px rgba(255, 215, 0, 0.6); }
+    }
+
+    .mode-toggle {
+      display: flex;
+      gap: 0;
+      border-radius: 8px;
+      overflow: hidden;
+      border: 1px solid #333;
+    }
+
+    .mode-btn {
+      padding: 8px 20px;
+      border: none;
+      background: #16213e;
+      color: #888;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s;
+      border-radius: 0;
+      font-weight: 500;
+      letter-spacing: 0.03em;
+    }
+
+    .mode-btn:hover { background: #0f3460; color: #ccc; transform: none; }
+    .mode-btn.active { background: #0f3460; color: #53c0f0; }
+  </style>
+</head>
+<body>
+
+  <div id="begin-popup">
+    <span class="begin-text">Begin!</span>
+  </div>
+
+  <h1>Tic Tac Toe</h1>
+
+  <div class="mode-toggle">
+    <button class="mode-btn active" id="mode-2p">2 Players</button>
+    <button class="mode-btn" id="mode-ai">vs CPU</button>
+  </div>
+
+  <div class="scoreboard">
+    <div class="score-box x">
+      <div class="label" id="x-label">Player X</div>
+      <div class="value" id="score-x">0</div>
+    </div>
+    <div class="score-box draws">
+      <div class="label">Draws</div>
+      <div class="value" id="score-d">0</div>
+    </div>
+    <div class="score-box o">
+      <div class="label" id="o-label">Player O</div>
+      <div class="value" id="score-o">0</div>
+    </div>
+  </div>
+
+  <div class="status" id="status">Player X's turn</div>
+
+  <div class="board" id="board">
+    <div class="cell" data-i="0"></div>
+    <div class="cell" data-i="1"></div>
+    <div class="cell" data-i="2"></div>
+    <div class="cell" data-i="3"></div>
+    <div class="cell" data-i="4"></div>
+    <div class="cell" data-i="5"></div>
+    <div class="cell" data-i="6"></div>
+    <div class="cell" data-i="7"></div>
+    <div class="cell" data-i="8"></div>
+  </div>
+
+  <canvas id="fireworks"></canvas>
+
+  <div class="controls">
+    <button id="restart">New Game</button>
+    <button id="reset-scores">Reset Scores</button>
+  </div>
+
+  <div id="winner-overlay"></div>
+
+  <script>
+    /* ── Fireworks ─────────────────────────────── */
+    const fwCanvas = document.getElementById('fireworks');
+    const fwCtx = fwCanvas.getContext('2d');
+    let particles = [];
+    let fwAnim = null;
+
+    function resizeCanvas() {
+      fwCanvas.width = window.innerWidth;
+      fwCanvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    function randomBetween(a, b) { return a + Math.random() * (b - a); }
+
+    function spawnBurst(x, y) {
+      const hue = Math.random() * 360;
+      const count = 50 + Math.floor(Math.random() * 30);
+      for (let i = 0; i < count; i++) {
+        const angle = Math.random() * Math.PI * 2;
+        const speed = randomBetween(1.5, 6);
+        particles.push({
+          x, y,
+          vx: Math.cos(angle) * speed,
+          vy: Math.sin(angle) * speed,
+          life: 1,
+          decay: randomBetween(0.012, 0.025),
+          size: randomBetween(2, 4),
+          hue: hue + randomBetween(-30, 30),
+          brightness: randomBetween(50, 80),
+        });
+      }
+    }
+
+    function launchFireworks() {
+      let bursts = 0;
+      const totalBursts = 7;
+
+      function scheduleBurst() {
+        if (bursts >= totalBursts) return;
+        const x = randomBetween(fwCanvas.width * 0.15, fwCanvas.width * 0.85);
+        const y = randomBetween(fwCanvas.height * 0.1, fwCanvas.height * 0.55);
+        spawnBurst(x, y);
+        bursts++;
+        setTimeout(scheduleBurst, randomBetween(180, 500));
+      }
+      scheduleBurst();
+
+      if (!fwAnim) tickFireworks();
+    }
+
+    function tickFireworks() {
+      fwCtx.clearRect(0, 0, fwCanvas.width, fwCanvas.height);
+
+      for (let i = particles.length - 1; i >= 0; i--) {
+        const p = particles[i];
+        p.x += p.vx;
+        p.y += p.vy;
+        p.vy += 0.04;          // gravity
+        p.vx *= 0.985;         // drag
+        p.vy *= 0.985;
+        p.life -= p.decay;
+
+        if (p.life <= 0) { particles.splice(i, 1); continue; }
+
+        fwCtx.globalAlpha = p.life;
+        fwCtx.fillStyle = `hsl(${p.hue}, 100%, ${p.brightness}%)`;
+        fwCtx.beginPath();
+        fwCtx.arc(p.x, p.y, p.size * p.life, 0, Math.PI * 2);
+        fwCtx.fill();
+      }
+
+      fwCtx.globalAlpha = 1;
+
+      if (particles.length) {
+        fwAnim = requestAnimationFrame(tickFireworks);
+      } else {
+        fwAnim = null;
+      }
+    }
+
+    /* ── Game ─────────────────────────────────── */
+    const WINS = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+
+    let board = Array(9).fill(null);
+    let current = 'X';
+    let gameOver = false;
+    let vsAI = false;
+    let scores = { X: 0, O: 0, D: 0 };
+
+    const cells = document.querySelectorAll('.cell');
+    const statusEl = document.getElementById('status');
+    const overlayEl = document.getElementById('winner-overlay');
+
+    function checkWinner(b) {
+      for (const [a, c, d] of WINS) {
+        if (b[a] && b[a] === b[c] && b[a] === b[d]) return { winner: b[a], line: [a, c, d] };
+      }
+      if (b.every(Boolean)) return { winner: null, draw: true };
+      return null;
+    }
+
+    function minimax(b, isMax) {
+      const result = checkWinner(b);
+      if (result) {
+        if (result.draw) return 0;
+        return result.winner === 'O' ? 10 : -10;
+      }
+      const scores = [];
+      for (let i = 0; i < 9; i++) {
+        if (!b[i]) {
+          b[i] = isMax ? 'O' : 'X';
+          scores.push(minimax(b, !isMax));
+          b[i] = null;
+        }
+      }
+      return isMax ? Math.max(...scores) : Math.min(...scores);
+    }
+
+    function bestMove(b) {
+      let best = -Infinity, move = -1;
+      for (let i = 0; i < 9; i++) {
+        if (!b[i]) {
+          b[i] = 'O';
+          const s = minimax(b, false);
+          b[i] = null;
+          if (s > best) { best = s; move = i; }
+        }
+      }
+      return move;
+    }
+
+    function render() {
+      cells.forEach((cell, i) => {
+        cell.textContent = board[i] || '';
+        cell.className = 'cell' + (board[i] ? ` ${board[i].toLowerCase()} taken` : '');
+      });
+    }
+
+    function setStatus(msg, cls = '') {
+      statusEl.textContent = msg;
+      statusEl.className = 'status ' + cls;
+    }
+
+    function updateScores() {
+      document.getElementById('score-x').textContent = scores.X;
+      document.getElementById('score-o').textContent = scores.O;
+      document.getElementById('score-d').textContent = scores.D;
+    }
+
+    function handleResult() {
+      const result = checkWinner(board);
+      if (!result) return false;
+
+      gameOver = true;
+
+      if (result.draw) {
+        scores.D++;
+        setStatus("It's a draw!", 'draw');
+      } else {
+        scores[result.winner]++;
+        result.line.forEach(i => cells[i].classList.add('win-cell'));
+        const winnerLabel = result.winner === 'X' ? 'Player 1' : 'Player 2';
+        overlayEl.textContent = `${winnerLabel} Wins!`;
+        overlayEl.classList.add('show');
+        setTimeout(() => overlayEl.classList.remove('show'), 5000);
+        const name = vsAI && result.winner === 'O' ? 'CPU' : winnerLabel;
+        setStatus(`${name} wins!`, 'win');
+        launchFireworks();
+      }
+
+      updateScores();
+      return true;
+    }
+
+    function aiTurn() {
+      const move = bestMove(board);
+      if (move === -1) return;
+      board[move] = 'O';
+      render();
+      if (!handleResult()) {
+        current = 'X';
+        setStatus("Player X's turn");
+      }
+    }
+
+    function play(i) {
+      if (gameOver || board[i]) return;
+      board[i] = current;
+      render();
+      if (handleResult()) return;
+
+      if (vsAI) {
+        current = 'O';
+        setStatus('CPU thinking…');
+        setTimeout(aiTurn, 320);
+      } else {
+        current = current === 'X' ? 'O' : 'X';
+        setStatus(`Player ${current}'s turn`);
+      }
+    }
+
+    function restart() {
+      board = Array(9).fill(null);
+      current = 'X';
+      gameOver = false;
+      overlayEl.classList.remove('show');
+      overlayEl.textContent = '';
+      render();
+      setStatus("Player X's turn");
+    }
+
+    cells.forEach(cell => cell.addEventListener('click', () => play(+cell.dataset.i)));
+
+    document.getElementById('restart').addEventListener('click', restart);
+
+    document.getElementById('reset-scores').addEventListener('click', () => {
+      scores = { X: 0, O: 0, D: 0 };
+      updateScores();
+      restart();
+    });
+
+    document.getElementById('mode-2p').addEventListener('click', () => {
+      vsAI = false;
+      document.getElementById('mode-2p').classList.add('active');
+      document.getElementById('mode-ai').classList.remove('active');
+      document.getElementById('o-label').textContent = 'Player O';
+      scores = { X: 0, O: 0, D: 0 };
+      updateScores();
+      restart();
+    });
+
+    document.getElementById('mode-ai').addEventListener('click', () => {
+      vsAI = true;
+      document.getElementById('mode-ai').classList.add('active');
+      document.getElementById('mode-2p').classList.remove('active');
+      document.getElementById('o-label').textContent = 'CPU';
+      scores = { X: 0, O: 0, D: 0 };
+      updateScores();
+      restart();
+    });
+
+    /* ── Begin! Pop-up ────────────────────────── */
+    (function() {
+      const beginPopup = document.getElementById('begin-popup');
+      setTimeout(() => {
+        beginPopup.classList.add('fade-out');
+        setTimeout(() => beginPopup.remove(), 600);
+      }, 5000);
+    })();
+  </script>
+</body>
+</html>
