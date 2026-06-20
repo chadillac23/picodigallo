@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+  <meta name="theme-color" content="#2d5a3d">
+  <title>Yard-to-Plants Planner</title>
+  <style>
+    :root {
+      --forest: #2d5a3d;
+      --forest-dark: #1f3f2a;
+      --leaf: #4a8c5c;
+      --sage: #e8f5e9;
+      --cream: #f9fbf5;
+      --text: #1e2b22;
+      --muted: #5e6f61;
+      --warn: #d97706;
+      --card: #ffffff;
+      --shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: var(--cream);
+      color: var(--text);
+      line-height: 1.5;
+      -webkit-text-size-adjust: 100%;
+    }
+
+    header {
+      background: linear-gradient(135deg, var(--forest) 0%, var(--leaf) 100%);
+      color: white;
+      padding: 1.25rem 1rem;
+      text-align: center;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 1.35rem;
+      letter-spacing: -0.02em;
+    }
+
+    header p {
+      margin: 0.25rem 0 0;
+      font-size: 0.9rem;
+      opacity: 0.92;
+    }
+
+    main {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 1rem;
+    }
+
+    .intro {
+      background: var(--sage);
+      border-left: 4px solid var(--leaf);
+      border-radius: 0.5rem;
+      padding: 0.875rem 1rem;
+      margin-bottom: 1rem;
+      font-size: 0.95rem;
+    }
+
+    .controls {
+      background: var(--card);
+      border-radius: 1rem;
+      box-shadow: var(--shadow);
+      padding: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .control-group {
+      margin-bottom: 1rem;
+    }
+
+    .control-group:last-child { margin-bottom: 0; }
+
+    label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 0.35rem;
+      font-size: 0.9rem;
+    }
+
+    select, input[type="text"] {
+      width: 100%;
+      padding: 0.75rem;
+      font-size: 1rem;
+      border: 2px solid #d1ddd4;
+      border-radius: 0.625rem;
+      background: #fff;
+      color: var(--text);
+      -webkit-appearance: none;
+      appearance: none;
+    }
+
+    select {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%235e6f61' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 0.6rem center;
+      background-size: 1.25rem;
+      padding-right: 2.5rem;
+    }
+
+    select:focus, input:focus {
+      outline: none;
+      border-color: var(--leaf);
+      box-shadow: 0 0 0 3px rgba(74,140,92,0.15);
+    }
+
+    .scenario-btn {
+      display: inline-block;
+      width: 100%;
+      padding: 0.85rem;
+      margin-top: 0.5rem;
+      font-size: 1rem;
+      font-weight: 600;
+      color: #fff;
+      background: var(--forest);
+      border: none;
+      border-radius: 0.625rem;
+      cursor: pointer;
+      text-align: center;
+      transition: background 0.15s ease;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .scenario-btn:active { background: var(--forest-dark); }
+
+    .filter-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-top: 0.5rem;
+    }
+
+    .chip {
+      padding: 0.45rem 0.8rem;
+      border-radius: 999px;
+      background: #eef3ef;
+      border: 1px solid #d1ddd4;
+      font-size: 0.85rem;
+      color: var(--muted);
+      cursor: pointer;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .chip.active {
+      background: var(--forest);
+      color: #fff;
+      border-color: var(--forest);
+    }
+
+    .results h2 {
+      font-size: 1.15rem;
+      margin: 1rem 0 0.75rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .match-count {
+      font-size: 0.85rem;
+      font-weight: normal;
+      color: var(--muted);
+    }
+
+    .plant-card {
+      background: var(--card);
+      border-radius: 1rem;
+      box-shadow: var(--shadow);
+      padding: 1rem;
+      margin-bottom: 0.875rem;
+      display: flex;
+      gap: 0.875rem;
+      align-items: flex-start;
+    }
+
+    .plant-emoji {
+      font-size: 2rem;
+      line-height: 1;
+      flex-shrink: 0;
+      width: 3rem;
+      height: 3rem;
+      display: grid;
+      place-items: center;
+      background: var(--sage);
+      border-radius: 0.75rem;
+    }
+
+    .plant-info { flex: 1; min-width: 0; }
+
+    .plant-name {
+      font-size: 1.05rem;
+      font-weight: 700;
+      margin: 0 0 0.25rem;
+      color: var(--forest-dark);
+    }
+
+    .plant-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      margin-bottom: 0.45rem;
+    }
+
+    .badge {
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 0.2rem 0.5rem;
+      border-radius: 999px;
+      background: #eef3ef;
+      color: var(--forest);
+      white-space: nowrap;
+    }
+
+    .badge.condition {
+      background: #dbeafe;
+      color: #1e40af;
+    }
+
+    .badge.sun { background: #fef3c7; color: #92400e; }
+    .badge.shade { background: #e0e7ff; color: #3730a3; }
+    .badge.partial { background: #d1fae5; color: #065f46; }
+
+    .plant-desc {
+      font-size: 0.9rem;
+      color: var(--text);
+      margin: 0;
+    }
+
+    .empty {
+      background: var(--card);
+      border-radius: 1rem;
+      box-shadow: var(--shadow);
+      padding: 2rem 1rem;
+      text-align: center;
+      color: var(--muted);
+    }
+
+    .empty-icon { font-size: 2.5rem; margin-bottom: 0.5rem; }
+
+    footer {
+      text-align: center;
+      padding: 1.5rem 1rem;
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+
+    @media (min-width: 640px) {
+      header h1 { font-size: 1.6rem; }
+      .scenario-btn { width: auto; padding-left: 1.5rem; padding-right: 1.5rem; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>🌿 Yard-to-Plants Planner</h1>
+    <p>Match your yard conditions with plants that thrive</p>
+  </header>
+
+  <main>
+    <section class="intro" aria-label="How it works">
+      Tell us about your yard’s sunlight, soil, and moisture. We’ll show plants that are most likely to succeed. Try the “Shady yard” scenario for an instant demo.
+    </section>
+
+    <section class="controls" aria-label="Yard conditions">
+      <div class="control-group">
+        <label for="sunlight">Sunlight</label>
+        <select id="sunlight" aria-describedby="sunlight-help">
+          <option value="any">— Any —</option>
+          <option value="full-sun">Full sun (6+ hrs direct sun)</option>
+          <option value="partial-shade" selected>Partial shade (3–6 hrs sun / dappled)</option>
+          <option value="full-shade">Full shade (little or no direct sun)</option>
+        </select>
+        <div id="sunlight-help" style="margin-top:0.35rem; font-size:0.85rem; color:var(--muted);">Start here — this is the biggest factor for plant success.</div>
+      </div>
+
+      <div class="control-group">
+        <label for="soil">Soil type</label>
+        <select id="soil">
+          <option value="any">— Any —</option>
+          <option value="loamy">Loamy / average</option>
+          <option value="clay">Clay / heavy</option>
+          <option value="sandy">Sandy / fast-draining</option>
+          <option value="moist">Rich, moist</option>
+        </select>
+      </div>
+
+      <div class="control-group">
+        <label for="moisture">Moisture</label>
+        <select id="moisture">
+          <option value="any">— Any —</option>
+          <option value="dry">Dry / drought-tolerant once established</option>
+          <option value="average">Average watering</option>
+          <option value="wet" selected>Moist to wet</option>
+        </select>
+      </div>
+
+      <div class="control-group">
+        <label>Quick scenarios</label>
+        <div class="filter-chips" id="scenarios" role="group" aria-label="Quick scenarios">
+          <button class="chip active" data-scenario="shady" aria-pressed="true">🌑 Shady yard</button>
+          <button class="chip" data-scenario="sunny" aria-pressed="false">☀️ Sunny yard</button>
+          <button class="chip" data-scenario="dry" aria-pressed="false">🏜️ Dry slope</button>
+          <button class="chip" data-scenario="wet" aria-pressed="false">💧 Wet corner</button>
+        </div>
+      </div>
+
+      <button class="scenario-btn" id="find-plants">Find plants for these conditions</button>
+    </section>
+
+    <section class="results" id="results" aria-live="polite">
+      <h2>Recommended plants <span class="match-count" id="match-count"></span></h2>
+      <div id="plant-list"></div>
+    </section>
+  </main>
+
+  <footer>
+    Built for mobile • no internet required after loading
+  </footer>
+
+  <script>
+    const plants = [
+      // Shade-loving plants
+      {
+        name: "Hosta",
+        emoji: "🌿",
+        conditions: ["partial-shade", "full-shade"],
+        soil: ["loamy", "moist", "clay"],
+        moisture: ["average", "wet"],
+        tags: ["perennial", "foliage"],
+        description: "Reliable shade perennial grown for lush, varied foliage. Slug-resistant varieties are available."
+      },
+      {
+        name: "Ferns (Japanese Painted, Ostrich, Lady)",
+        emoji: "🌾",
+        conditions: ["partial-shade", "full-shade"],
+        soil: ["loamy", "moist", "clay"],
+        moisture: ["average", "wet"],
+        tags: ["perennial", " texture"],
+        description: "Ancient plants that love shade and steady moisture. Excellent for giving a woodland feel."
+      },
+      {
+        name: "Astilbe",
+        emoji: "🌸",
+        conditions: ["partial-shade", "full-shade"],
+        soil: ["loamy", "moist", "clay"],
+        moisture: ["wet", "average"],
+        tags: ["perennial", "flowers"],
+        description: "Feathery plumes of pink, red, or white flowers. Needs consistent moisture; dislikes dry soil."
+      },
+      {
+        name: "Bleeding Heart",
+        emoji: "💗",
+        conditions: ["partial-shade", "full-shade"],
+        soil: ["loamy", "moist"],
+        moisture: ["average", "wet"],
+        tags: ["perennial", "spring flowers"],
+        description: "Distinctive heart-shaped spring blooms. Dies back in summer heat, so pair with later-emerging hostas."
+      },
+      {
+        name: "Heuchera (Coral Bells)",
+        emoji: "🍂",
+        conditions: ["partial-shade", "full-shade"],
+        soil: ["loamy", "sandy"],
+        moisture: ["average", "dry"],
+        tags: ["perennial", "foliage"],
+        description: "Colorful, semi-evergreen leaves in shades of purple, lime, and caramel. Tolerates drier shade than hostas."
+      },
+      {
+        name: "Lungwort",
+        emoji: "🌺",
+        conditions: ["partial-shade", "full-shade"],
+        soil: ["loamy", "moist", "clay"],
+        moisture: ["average", "wet"],
+        tags: ["perennial", "early flowers"],
+        description: "Early spring blue-to-pink flowers with spotted foliage that brightens dark corners."
+      },
+      {
+        name: "Wild Ginger",
+        emoji: "🌱",
+        conditions: ["full-shade", "partial-shade"],
+        soil: ["loamy", "moist"],
+        moisture: ["average", "wet"],
+        tags: ["groundcover", "native"],
+        description: "Low, spreading groundcover with heart-shaped leaves; excellent under trees."
+      },
+      {
+        name: "Solomon's Seal",
+        emoji: "🌿",
+        conditions: ["partial-shade", "full-shade"],
+        soil: ["loamy", "moist"],
+        moisture: ["average", "wet"],
+        tags: ["perennial", "arching"],
+        description: "Graceful arching stems with dangling white bells in spring. Spreads slowly by rhizomes."
+      },
+
+      // Sun-loving plants
+      {
+        name: "Lavender",
+        emoji: "💜",
+        conditions: ["full-sun"],
+        soil: ["sandy", "loamy"],
+        moisture: ["dry", "average"],
+        tags: ["perennial", "fragrant"],
+        description: "Drought-tolerant shrub with fragrant purple spikes. Needs excellent drainage and full sun."
+      },
+      {
+        name: "Coneflower (Echinacea)",
+        emoji: "🌼",
+        conditions: ["full-sun", "partial-shade"],
+        soil: ["loamy", "sandy", "clay"],
+        moisture: ["dry", "average"],
+        tags: ["perennial", "pollinators"],
+        description: "Daisy-like blooms that attract bees and butterflies. Tolerates heat and poor soil."
+      },
+      {
+        name: "Black-eyed Susan",
+        emoji: "🌻",
+        conditions: ["full-sun", "partial-shade"],
+        soil: ["loamy", "sandy", "clay"],
+        moisture: ["dry", "average"],
+        tags: ["perennial", "pollinators"],
+        description: "Cheery yellow flowers with dark centers. Very forgiving in sun and average soil."
+      },
+      {
+        name: "Daylily",
+        emoji: "🌺",
+        conditions: ["full-sun", "partial-shade"],
+        soil: ["loamy", "clay", "sandy"],
+        moisture: ["average", "wet"],
+        tags: ["perennial", "easy"],
+        description: "Tough, clump-forming perennials with trumpet-shaped blooms in many colors."
+      },
+      {
+        name: "Salvia",
+        emoji: "🌷",
+        conditions: ["full-sun", "partial-shade"],
+        soil: ["loamy", "sandy"],
+        moisture: ["average", "dry"],
+        tags: ["perennial", "pollinators"],
+        description: "Spikes of blue, purple, or red flowers loved by hummingbirds and bees."
+      },
+      {
+        name: "Rosemary",
+        emoji: "🌿",
+        conditions: ["full-sun"],
+        soil: ["sandy", "loamy"],
+        moisture: ["dry", "average"],
+        tags: ["shrub", "herb"],
+        description: "Aromatic evergreen herb that thrives in hot, sunny, well-drained spots."
+      },
+
+      // Partial shade / versatile
+      {
+        name: "Hydrangea",
+        emoji: "🌸",
+        conditions: ["partial-shade", "full-shade"],
+        soil: ["loamy", "moist", "clay"],
+        moisture: ["average", "wet"],
+        tags: ["shrub", "summer flowers"],
+        description: "Big summer blooms; blue or pink depending on soil pH. Prefers morning sun and afternoon shade."
+      },
+      {
+        name: "Japanese Forest Grass",
+        emoji: "🌾",
+        conditions: ["partial-shade", "full-shade"],
+        soil: ["loamy", "moist"],
+        moisture: ["average", "wet"],
+        tags: ["grass", "accent"],
+        description: "Arching, golden-striped grass that lights up shade gardens and containers."
+      },
+      {
+        name: "Coleus",
+        emoji: "🍁",
+        conditions: ["partial-shade", "full-shade"],
+        soil: ["loamy", "sandy"],
+        moisture: ["average", "wet"],
+        tags: ["annual", "foliage"],
+        description: "Vibrant multicolored leaves for shade beds and containers. Easy to root from cuttings."
+      },
+      {
+        name: "Impatiens",
+        emoji: "🌸",
+        conditions: ["partial-shade", "full-shade"],
+        soil: ["loamy", "moist"],
+        moisture: ["average", "wet"],
+        tags: ["annual", "flowers"],
+        description: "Non-stop flowers in shade. Keep soil moist; great for borders and containers."
+      }
+    ];
+
+    const sunlightEl = document.getElementById('sunlight');
+    const soilEl = document.getElementById('soil');
+    const moistureEl = document.getElementById('moisture');
+    const plantListEl = document.getElementById('plant-list');
+    const matchCountEl = document.getElementById('match-count');
+    const scenarioChips = document.querySelectorAll('.chip[data-scenario]');
+
+    function scorePlant(plant, filters) {
+      let score = 0;
+      if (filters.sunlight !== 'any' && plant.conditions.includes(filters.sunlight)) score += 3;
+      if (filters.soil !== 'any' && plant.soil.includes(filters.soil)) score += 2;
+      if (filters.moisture !== 'any' && plant.moisture.includes(filters.moisture)) score += 2;
+      return score;
+    }
+
+    function renderPlants() {
+      const filters = {
+        sunlight: sunlightEl.value,
+        soil: soilEl.value,
+        moisture: moistureEl.value
+      };
+
+      const scored = plants
+        .map(p => ({ plant: p, score: scorePlant(p, filters) }))
+        .filter(({ score }) => {
+          // If any specific filter is set, require at least one match (with sunlight weighted highest)
+          const anyFilterSet = filters.sunlight !== 'any' || filters.soil !== 'any' || filters.moisture !== 'any';
+          if (!anyFilterSet) return true;
+          return score > 0;
+        })
+        .sort((a, b) => b.score - a.score);
+
+      matchCountEl.textContent = scored.length ? `(${scored.length} matches)` : '';
+
+      if (!scored.length) {
+        plantListEl.innerHTML = `
+          <div class="empty">
+            <div class="empty-icon">🍃</div>
+            <p>No plants matched all those conditions. Try relaxing soil or moisture, or choose “Any.”</p>
+          </div>
+        `;
+        return;
+      }
+
+      plantListEl.innerHTML = scored.map(({ plant }) => {
+        const condBadges = plant.conditions.map(c => {
+          const label = c === 'full-sun' ? 'Full sun' : c === 'partial-shade' ? 'Partial shade' : 'Full shade';
+          const cls = c === 'full-sun' ? 'sun' : c === 'partial-shade' ? 'partial' : 'shade';
+          return `<span class="badge ${cls}">${label}</span>`;
+        }).join('');
+
+        return `
+          <article class="plant-card">
+            <div class="plant-emoji" aria-hidden="true">${plant.emoji}</div>
+            <div class="plant-info">
+              <h3 class="plant-name">${plant.name}</h3>
+              <div class="plant-meta">
+                ${condBadges}
+                <span class="badge">${plant.moisture.join(' / ')}</span>
+                <span class="badge">${plant.soil.join(' / ')}</span>
+              </div>
+              <p class="plant-desc">${plant.description}</p>
+            </div>
+          </article>
+        `;
+      }).join('');
+    }
+
+    function applyScenario(name) {
+      // Reset chips
+      scenarioChips.forEach(c => {
+        c.classList.toggle('active', c.dataset.scenario === name);
+        c.setAttribute('aria-pressed', c.dataset.scenario === name);
+      });
+
+      switch (name) {
+        case 'shady':
+          sunlightEl.value = 'full-shade';
+          soilEl.value = 'loamy';
+          moistureEl.value = 'average';
+          break;
+        case 'sunny':
+          sunlightEl.value = 'full-sun';
+          soilEl.value = 'loamy';
+          moistureEl.value = 'average';
+          break;
+        case 'dry':
+          sunlightEl.value = 'full-sun';
+          soilEl.value = 'sandy';
+          moistureEl.value = 'dry';
+          break;
+        case 'wet':
+          sunlightEl.value = 'partial-shade';
+          soilEl.value = 'clay';
+          moistureEl.value = 'wet';
+          break;
+      }
+      renderPlants();
+    }
+
+    scenarioChips.forEach(chip => {
+      chip.addEventListener('click', () => applyScenario(chip.dataset.scenario));
+    });
+
+    document.getElementById('find-plants').addEventListener('click', renderPlants);
+    [sunlightEl, soilEl, moistureEl].forEach(el => el.addEventListener('change', renderPlants));
+
+    // Load initial scenario
+    applyScenario('shady');
+  </script>
+</body>
+</html>
