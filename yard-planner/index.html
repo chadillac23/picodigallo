@@ -17,6 +17,21 @@
       --warn: #d97706;
       --card: #ffffff;
       --shadow: 0 2px 8px rgba(0,0,0,0.08);
+
+      /* USDA zone colors (approx) */
+      --z1: #6a2c91;
+      --z2: #4a69bd;
+      --z3: #1e90ff;
+      --z4: #00bfff;
+      --z5: #00ced1;
+      --z6: #2ecc71;
+      --z7: #7ed321;
+      --z8: #f1c40f;
+      --z9: #e67e22;
+      --z10: #e74c3c;
+      --z11: #c0392b;
+      --z12: #8e44ad;
+      --z13: #5a189a;
     }
 
     * { box-sizing: border-box; }
@@ -58,21 +73,118 @@
       padding: 1rem;
     }
 
-    .intro {
-      background: var(--sage);
-      border-left: 4px solid var(--leaf);
-      border-radius: 0.5rem;
-      padding: 0.875rem 1rem;
-      margin-bottom: 1rem;
-      font-size: 0.95rem;
-    }
-
-    .controls {
+    .step {
       background: var(--card);
       border-radius: 1rem;
       box-shadow: var(--shadow);
       padding: 1rem;
       margin-bottom: 1rem;
+    }
+
+    .step h2 {
+      font-size: 1.1rem;
+      margin: 0 0 0.75rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .step-number {
+      display: inline-grid;
+      place-items: center;
+      width: 1.6rem;
+      height: 1.6rem;
+      border-radius: 50%;
+      background: var(--forest);
+      color: #fff;
+      font-size: 0.85rem;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    .zone-map {
+      width: 100%;
+      height: auto;
+      border-radius: 0.75rem;
+      background: #f4f8f5;
+      touch-action: manipulation;
+    }
+
+    .zone-region {
+      cursor: pointer;
+      transition: opacity 0.15s ease, filter 0.15s ease;
+      stroke: rgba(255,255,255,0.35);
+      stroke-width: 0.5;
+    }
+
+    .zone-region:hover, .zone-region:active {
+      filter: brightness(1.1);
+      opacity: 0.92;
+    }
+
+    .zone-region.selected {
+      stroke: var(--text);
+      stroke-width: 1.5;
+      filter: brightness(1.05);
+    }
+
+    .zone-label {
+      font-size: 6px;
+      font-weight: 700;
+      fill: rgba(0,0,0,0.75);
+      pointer-events: none;
+      text-anchor: middle;
+      dominant-baseline: middle;
+    }
+
+    .zone-legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.35rem;
+      margin-top: 0.75rem;
+      justify-content: center;
+    }
+
+    .zone-key {
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+      font-size: 0.75rem;
+      padding: 0.2rem 0.4rem;
+      border-radius: 999px;
+      background: #eef3ef;
+      border: 1px solid #d1ddd4;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .zone-key.active {
+      outline: 2px solid var(--forest);
+      outline-offset: -1px;
+    }
+
+    .zone-key span {
+      width: 0.75rem;
+      height: 0.75rem;
+      border-radius: 999px;
+      display: inline-block;
+    }
+
+    .selected-zone-display {
+      text-align: center;
+      padding: 0.75rem;
+      margin-top: 0.75rem;
+      border-radius: 0.625rem;
+      background: var(--sage);
+      font-weight: 600;
+      color: var(--forest-dark);
+    }
+
+    .zone-details {
+      font-size: 0.85rem;
+      color: var(--muted);
+      font-weight: normal;
+      margin-top: 0.2rem;
     }
 
     .control-group {
@@ -131,7 +243,12 @@
       -webkit-tap-highlight-color: transparent;
     }
 
-    .scenario-btn:active { background: var(--forest-dark); }
+    .scenario-btn:disabled {
+      background: #9fb3a4;
+      cursor: not-allowed;
+    }
+
+    .scenario-btn:active:not(:disabled) { background: var(--forest-dark); }
 
     .filter-chips {
       display: flex;
@@ -221,14 +338,11 @@
       white-space: nowrap;
     }
 
-    .badge.condition {
-      background: #dbeafe;
-      color: #1e40af;
-    }
-
+    .badge.condition { background: #dbeafe; color: #1e40af; }
     .badge.sun { background: #fef3c7; color: #92400e; }
     .badge.shade { background: #e0e7ff; color: #3730a3; }
     .badge.partial { background: #d1fae5; color: #065f46; }
+    .badge.zone { background: #fde68a; color: #78350f; }
 
     .plant-desc {
       font-size: 0.9rem;
@@ -246,6 +360,19 @@
     }
 
     .empty-icon { font-size: 2.5rem; margin-bottom: 0.5rem; }
+
+    .hidden { display: none !important; }
+
+    .change-link {
+      background: none;
+      border: none;
+      color: var(--leaf);
+      text-decoration: underline;
+      font-size: 0.85rem;
+      cursor: pointer;
+      padding: 0;
+      margin-top: 0.35rem;
+    }
 
     footer {
       text-align: center;
@@ -267,11 +394,87 @@
   </header>
 
   <main>
-    <section class="intro" aria-label="How it works">
-      Tell us about your yard’s sunlight, soil, and moisture. We’ll show plants that are most likely to succeed. Try the “Shady yard” scenario for an instant demo.
+    <!-- Step 1: Zone selection -->
+    <section class="step" id="zone-step" aria-label="Select your hardiness zone">
+      <h2><span class="step-number">1</span> Select your USDA hardiness zone</h2>
+      <p style="font-size:0.9rem; color:var(--muted); margin-top:-0.25rem; margin-bottom:0.75rem;">
+        Tap your region on the map. Zones are based on average annual extreme minimum winter temperature.
+      </p>
+
+      <svg class="zone-map" viewBox="0 0 360 220" role="img" aria-label="Simplified US hardiness zone map">
+        <title>Simplified US plant hardiness zone map</title>
+        <defs>
+          <linearGradient id="usLand" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#f4f8f5"/>
+            <stop offset="100%" stop-color="#e2efe6"/>
+          </linearGradient>
+        </defs>
+
+        <!-- Background / ocean -->
+        <rect width="360" height="220" fill="#f4f8f5"/>
+
+        <!-- Simplified contiguous US silhouette as clickable zone bands -->
+        <!-- Zone 3: northern tier -->
+        <path class="zone-region" data-zone="3" fill="var(--z3)" d="M60,55 L90,48 L115,45 L145,42 L175,40 L210,38 L245,36 L275,34 L300,33 L315,35 L320,40 L315,55 L305,62 L285,65 L260,66 L230,68 L200,70 L170,72 L140,74 L110,76 L85,78 L65,77 L55,72 L52,65 Z"/>
+        <!-- Zone 4 -->
+        <path class="zone-region" data-zone="4" fill="var(--z4)" d="M55,72 L85,78 L115,76 L145,74 L175,72 L205,70 L235,68 L260,66 L285,65 L305,62 L312,68 L308,82 L300,90 L275,93 L250,94 L220,96 L190,98 L160,100 L130,102 L100,104 L75,105 L58,102 L52,93 L50,83 Z"/>
+        <!-- Zone 5 -->
+        <path class="zone-region" data-zone="5" fill="var(--z5)" d="M52,93 L75,105 L100,104 L130,102 L160,100 L190,98 L220,96 L250,94 L275,93 L300,90 L305,100 L298,113 L280,119 L255,121 L230,123 L200,125 L170,127 L140,129 L110,131 L85,132 L65,130 L55,123 L50,110 Z"/>
+        <!-- Zone 6 -->
+        <path class="zone-region" data-zone="6" fill="var(--z6)" d="M55,123 L85,132 L110,131 L140,129 L170,127 L200,125 L230,123 L255,121 L280,119 L298,113 L302,125 L295,138 L275,145 L250,148 L220,150 L190,152 L160,154 L130,156 L100,158 L78,157 L62,150 L55,138 Z"/>
+        <!-- Zone 7 -->
+        <path class="zone-region" data-zone="7" fill="var(--z7)" d="M62,150 L78,157 L100,158 L130,156 L160,154 L190,152 L220,150 L250,148 L275,145 L295,138 L298,150 L290,162 L270,170 L245,173 L215,175 L185,177 L155,179 L125,181 L95,182 L75,180 L65,173 L60,162 Z"/>
+        <!-- Zone 8 -->
+        <path class="zone-region" data-zone="8" fill="var(--z8)" d="M65,173 L75,180 L95,182 L125,181 L155,179 L185,177 L215,175 L245,173 L270,170 L290,162 L293,172 L285,183 L265,190 L240,193 L210,195 L180,197 L150,199 L120,200 L95,199 L80,195 L70,187 Z"/>
+        <!-- Zone 9 -->
+        <path class="zone-region" data-zone="9" fill="var(--z9)" d="M70,187 L80,195 L95,199 L120,200 L150,199 L180,197 L210,195 L240,193 L265,190 L285,183 L288,192 L280,200 L260,205 L235,208 L205,210 L175,212 L145,213 L120,212 L100,210 L85,205 L75,198 Z"/>
+        <!-- Zone 10+ (southern tip / Florida / Gulf / desert) -->
+        <path class="zone-region" data-zone="10" fill="var(--z10)" d="M75,198 L85,205 L100,210 L120,212 L145,213 L175,212 L205,210 L235,208 L260,205 L280,200 L285,208 L275,216 L255,219 L225,220 L195,219 L165,218 L135,217 L110,216 L90,214 L80,210 Z"/>
+
+        <!-- Alaska -->
+        <path class="zone-region" data-zone="3" fill="var(--z3)" d="M15,15 L45,10 L75,12 L100,18 L95,28 L70,32 L40,30 L15,26 Z"/>
+        <!-- Hawaii -->
+        <path class="zone-region" data-zone="11" fill="var(--z11)" d="M55,185 L70,183 L85,186 L95,192 L90,198 L75,200 L60,197 Z"/>
+
+        <!-- Labels -->
+        <text x="180" y="58" class="zone-label">Zone 3</text>
+        <text x="180" y="86" class="zone-label">Zone 4</text>
+        <text x="180" y="113" class="zone-label">Zone 5</text>
+        <text x="180" y="140" class="zone-label">Zone 6</text>
+        <text x="180" y="166" class="zone-label">Zone 7</text>
+        <text x="180" y="188" class="zone-label">Zone 8</text>
+        <text x="180" y="205" class="zone-label">Zone 9</text>
+        <text x="180" y="218" class="zone-label">10+</text>
+        <text x="60" y="22" class="zone-label" style="font-size:5px;">AK 3</text>
+        <text x="75" y="192" class="zone-label" style="font-size:5px;">HI 11</text>
+      </svg>
+
+      <div class="zone-legend" id="zone-legend" role="group" aria-label="Hardiness zone quick selector">
+        <button class="zone-key" data-zone="3" aria-pressed="false"><span style="background:var(--z3)"></span>3</button>
+        <button class="zone-key" data-zone="4" aria-pressed="false"><span style="background:var(--z4)"></span>4</button>
+        <button class="zone-key" data-zone="5" aria-pressed="false"><span style="background:var(--z5)"></span>5</button>
+        <button class="zone-key" data-zone="6" aria-pressed="false"><span style="background:var(--z6)"></span>6</button>
+        <button class="zone-key" data-zone="7" aria-pressed="false"><span style="background:var(--z7)"></span>7</button>
+        <button class="zone-key" data-zone="8" aria-pressed="false"><span style="background:var(--z8)"></span>8</button>
+        <button class="zone-key" data-zone="9" aria-pressed="false"><span style="background:var(--z9)"></span>9</button>
+        <button class="zone-key" data-zone="10" aria-pressed="false"><span style="background:var(--z10)"></span>10+</button>
+      </div>
+
+      <div class="selected-zone-display hidden" id="selected-zone-display">
+        Zone <span id="selected-zone-value">—</span> selected
+        <div class="zone-details" id="selected-zone-details"></div>
+        <button class="scenario-btn" id="continue-to-conditions">Continue to yard conditions</button>
+      </div>
     </section>
 
-    <section class="controls" aria-label="Yard conditions">
+    <!-- Step 2: Conditions -->
+    <section class="step hidden" id="conditions-step" aria-label="Yard conditions">
+      <h2><span class="step-number">2</span> Yard conditions</h2>
+      <p style="font-size:0.85rem; color:var(--muted); margin:-0.5rem 0 0.75rem;">
+        Zone <strong id="zone-badge">—</strong> selected.
+        <button class="change-link" id="change-zone">Change zone</button>
+      </p>
+
       <div class="control-group">
         <label for="sunlight">Sunlight</label>
         <select id="sunlight" aria-describedby="sunlight-help">
@@ -317,7 +520,8 @@
       <button class="scenario-btn" id="find-plants">Find plants for these conditions</button>
     </section>
 
-    <section class="results" id="results" aria-live="polite">
+    <!-- Results -->
+    <section class="results hidden" id="results" aria-live="polite">
       <h2>Recommended plants <span class="match-count" id="match-count"></span></h2>
       <div id="plant-list"></div>
     </section>
@@ -328,175 +532,55 @@
   </footer>
 
   <script>
+    const zoneInfo = {
+      3: "Northernmost US / Alaska. Extreme winter lows -40°F to -30°F.",
+      4: "Northern states and high elevations. Winter lows -30°F to -20°F.",
+      5: "Upper Midwest, New England mountains. Winter lows -20°F to -10°F.",
+      6: "Mid-Atlantic, lower Midwest, Pacific Northwest coast. Winter lows -10°F to 0°F.",
+      7: "Middle US, Mid-Atlantic, inland PNW. Winter lows 0°F to 10°F.",
+      8: "Southeast, coastal Mid-Atlantic, Southwest. Winter lows 10°F to 20°F.",
+      9: "Gulf Coast, Southern California. Winter lows 20°F to 30°F.",
+      10: "Deep South, South Florida, desert. Winter lows 30°F to 40°F."
+    };
+
     const plants = [
       // Shade-loving plants
-      {
-        name: "Hosta",
-        emoji: "🌿",
-        conditions: ["partial-shade", "full-shade"],
-        soil: ["loamy", "moist", "clay"],
-        moisture: ["average", "wet"],
-        tags: ["perennial", "foliage"],
-        description: "Reliable shade perennial grown for lush, varied foliage. Slug-resistant varieties are available."
-      },
-      {
-        name: "Ferns (Japanese Painted, Ostrich, Lady)",
-        emoji: "🌾",
-        conditions: ["partial-shade", "full-shade"],
-        soil: ["loamy", "moist", "clay"],
-        moisture: ["average", "wet"],
-        tags: ["perennial", " texture"],
-        description: "Ancient plants that love shade and steady moisture. Excellent for giving a woodland feel."
-      },
-      {
-        name: "Astilbe",
-        emoji: "🌸",
-        conditions: ["partial-shade", "full-shade"],
-        soil: ["loamy", "moist", "clay"],
-        moisture: ["wet", "average"],
-        tags: ["perennial", "flowers"],
-        description: "Feathery plumes of pink, red, or white flowers. Needs consistent moisture; dislikes dry soil."
-      },
-      {
-        name: "Bleeding Heart",
-        emoji: "💗",
-        conditions: ["partial-shade", "full-shade"],
-        soil: ["loamy", "moist"],
-        moisture: ["average", "wet"],
-        tags: ["perennial", "spring flowers"],
-        description: "Distinctive heart-shaped spring blooms. Dies back in summer heat, so pair with later-emerging hostas."
-      },
-      {
-        name: "Heuchera (Coral Bells)",
-        emoji: "🍂",
-        conditions: ["partial-shade", "full-shade"],
-        soil: ["loamy", "sandy"],
-        moisture: ["average", "dry"],
-        tags: ["perennial", "foliage"],
-        description: "Colorful, semi-evergreen leaves in shades of purple, lime, and caramel. Tolerates drier shade than hostas."
-      },
-      {
-        name: "Lungwort",
-        emoji: "🌺",
-        conditions: ["partial-shade", "full-shade"],
-        soil: ["loamy", "moist", "clay"],
-        moisture: ["average", "wet"],
-        tags: ["perennial", "early flowers"],
-        description: "Early spring blue-to-pink flowers with spotted foliage that brightens dark corners."
-      },
-      {
-        name: "Wild Ginger",
-        emoji: "🌱",
-        conditions: ["full-shade", "partial-shade"],
-        soil: ["loamy", "moist"],
-        moisture: ["average", "wet"],
-        tags: ["groundcover", "native"],
-        description: "Low, spreading groundcover with heart-shaped leaves; excellent under trees."
-      },
-      {
-        name: "Solomon's Seal",
-        emoji: "🌿",
-        conditions: ["partial-shade", "full-shade"],
-        soil: ["loamy", "moist"],
-        moisture: ["average", "wet"],
-        tags: ["perennial", "arching"],
-        description: "Graceful arching stems with dangling white bells in spring. Spreads slowly by rhizomes."
-      },
+      { name: "Hosta", emoji: "🌿", zones: [3,4,5,6,7,8,9], conditions: ["partial-shade","full-shade"], soil: ["loamy","moist","clay"], moisture: ["average","wet"], tags: ["perennial","foliage"], description: "Reliable shade perennial grown for lush, varied foliage. Slug-resistant varieties are available." },
+      { name: "Ferns (Japanese Painted, Ostrich, Lady)", emoji: "🌾", zones: [3,4,5,6,7,8,9], conditions: ["partial-shade","full-shade"], soil: ["loamy","moist","clay"], moisture: ["average","wet"], tags: ["perennial","texture"], description: "Ancient plants that love shade and steady moisture. Excellent for giving a woodland feel." },
+      { name: "Astilbe", emoji: "🌸", zones: [4,5,6,7,8,9], conditions: ["partial-shade","full-shade"], soil: ["loamy","moist","clay"], moisture: ["wet","average"], tags: ["perennial","flowers"], description: "Feathery plumes of pink, red, or white flowers. Needs consistent moisture; dislikes dry soil." },
+      { name: "Bleeding Heart", emoji: "💗", zones: [3,4,5,6,7,8,9], conditions: ["partial-shade","full-shade"], soil: ["loamy","moist"], moisture: ["average","wet"], tags: ["perennial","spring flowers"], description: "Distinctive heart-shaped spring blooms. Dies back in summer heat, so pair with later-emerging hostas." },
+      { name: "Heuchera (Coral Bells)", emoji: "🍂", zones: [4,5,6,7,8,9], conditions: ["partial-shade","full-shade"], soil: ["loamy","sandy"], moisture: ["average","dry"], tags: ["perennial","foliage"], description: "Colorful, semi-evergreen leaves in shades of purple, lime, and caramel. Tolerates drier shade than hostas." },
+      { name: "Lungwort", emoji: "🌺", zones: [4,5,6,7,8,9], conditions: ["partial-shade","full-shade"], soil: ["loamy","moist","clay"], moisture: ["average","wet"], tags: ["perennial","early flowers"], description: "Early spring blue-to-pink flowers with spotted foliage that brightens dark corners." },
+      { name: "Wild Ginger", emoji: "🌱", zones: [4,5,6,7,8], conditions: ["full-shade","partial-shade"], soil: ["loamy","moist"], moisture: ["average","wet"], tags: ["groundcover","native"], description: "Low, spreading groundcover with heart-shaped leaves; excellent under trees." },
+      { name: "Solomon's Seal", emoji: "🌿", zones: [3,4,5,6,7,8], conditions: ["partial-shade","full-shade"], soil: ["loamy","moist"], moisture: ["average","wet"], tags: ["perennial","arching"], description: "Graceful arching stems with dangling white bells in spring. Spreads slowly by rhizomes." },
+      { name: "Hellebore", emoji: "🌹", zones: [4,5,6,7,8,9], conditions: ["partial-shade","full-shade"], soil: ["loamy","moist"], moisture: ["average"], tags: ["perennial","winter flowers"], description: "Late-winter to early-spring blooms in shaded spots. Deer- and rabbit-resistant." },
 
       // Sun-loving plants
-      {
-        name: "Lavender",
-        emoji: "💜",
-        conditions: ["full-sun"],
-        soil: ["sandy", "loamy"],
-        moisture: ["dry", "average"],
-        tags: ["perennial", "fragrant"],
-        description: "Drought-tolerant shrub with fragrant purple spikes. Needs excellent drainage and full sun."
-      },
-      {
-        name: "Coneflower (Echinacea)",
-        emoji: "🌼",
-        conditions: ["full-sun", "partial-shade"],
-        soil: ["loamy", "sandy", "clay"],
-        moisture: ["dry", "average"],
-        tags: ["perennial", "pollinators"],
-        description: "Daisy-like blooms that attract bees and butterflies. Tolerates heat and poor soil."
-      },
-      {
-        name: "Black-eyed Susan",
-        emoji: "🌻",
-        conditions: ["full-sun", "partial-shade"],
-        soil: ["loamy", "sandy", "clay"],
-        moisture: ["dry", "average"],
-        tags: ["perennial", "pollinators"],
-        description: "Cheery yellow flowers with dark centers. Very forgiving in sun and average soil."
-      },
-      {
-        name: "Daylily",
-        emoji: "🌺",
-        conditions: ["full-sun", "partial-shade"],
-        soil: ["loamy", "clay", "sandy"],
-        moisture: ["average", "wet"],
-        tags: ["perennial", "easy"],
-        description: "Tough, clump-forming perennials with trumpet-shaped blooms in many colors."
-      },
-      {
-        name: "Salvia",
-        emoji: "🌷",
-        conditions: ["full-sun", "partial-shade"],
-        soil: ["loamy", "sandy"],
-        moisture: ["average", "dry"],
-        tags: ["perennial", "pollinators"],
-        description: "Spikes of blue, purple, or red flowers loved by hummingbirds and bees."
-      },
-      {
-        name: "Rosemary",
-        emoji: "🌿",
-        conditions: ["full-sun"],
-        soil: ["sandy", "loamy"],
-        moisture: ["dry", "average"],
-        tags: ["shrub", "herb"],
-        description: "Aromatic evergreen herb that thrives in hot, sunny, well-drained spots."
-      },
+      { name: "Lavender", emoji: "💜", zones: [5,6,7,8,9], conditions: ["full-sun"], soil: ["sandy","loamy"], moisture: ["dry","average"], tags: ["perennial","fragrant"], description: "Drought-tolerant shrub with fragrant purple spikes. Needs excellent drainage and full sun." },
+      { name: "Coneflower (Echinacea)", emoji: "🌼", zones: [3,4,5,6,7,8,9], conditions: ["full-sun","partial-shade"], soil: ["loamy","sandy","clay"], moisture: ["dry","average"], tags: ["perennial","pollinators"], description: "Daisy-like blooms that attract bees and butterflies. Tolerates heat and poor soil." },
+      { name: "Black-eyed Susan", emoji: "🌻", zones: [3,4,5,6,7,8,9], conditions: ["full-sun","partial-shade"], soil: ["loamy","sandy","clay"], moisture: ["dry","average"], tags: ["perennial","pollinators"], description: "Cheery yellow flowers with dark centers. Very forgiving in sun and average soil." },
+      { name: "Daylily", emoji: "🌺", zones: [3,4,5,6,7,8,9], conditions: ["full-sun","partial-shade"], soil: ["loamy","clay","sandy"], moisture: ["average","wet"], tags: ["perennial","easy"], description: "Tough, clump-forming perennials with trumpet-shaped blooms in many colors." },
+      { name: "Salvia", emoji: "🌷", zones: [4,5,6,7,8,9,10], conditions: ["full-sun","partial-shade"], soil: ["loamy","sandy"], moisture: ["average","dry"], tags: ["perennial","pollinators"], description: "Spikes of blue, purple, or red flowers loved by hummingbirds and bees." },
+      { name: "Rosemary", emoji: "🌿", zones: [7,8,9,10,11], conditions: ["full-sun"], soil: ["sandy","loamy"], moisture: ["dry","average"], tags: ["shrub","herb"], description: "Aromatic evergreen herb that thrives in hot, sunny, well-drained spots." },
+      { name: "Russian Sage", emoji: "💠", zones: [4,5,6,7,8,9], conditions: ["full-sun"], soil: ["sandy","loamy"], moisture: ["dry","average"], tags: ["perennial","drought-tolerant"], description: "Silvery foliage and lavender-blue flower spikes; very drought-tolerant once established." },
+      { name: "Sedum (Stonecrop)", emoji: "🌵", zones: [3,4,5,6,7,8,9,10], conditions: ["full-sun","partial-shade"], soil: ["sandy","loamy"], moisture: ["dry","average"], tags: ["perennial","succulent"], description: "Succulent leaves and late-season flowers; thrives in poor, dry soil." },
 
       // Partial shade / versatile
-      {
-        name: "Hydrangea",
-        emoji: "🌸",
-        conditions: ["partial-shade", "full-shade"],
-        soil: ["loamy", "moist", "clay"],
-        moisture: ["average", "wet"],
-        tags: ["shrub", "summer flowers"],
-        description: "Big summer blooms; blue or pink depending on soil pH. Prefers morning sun and afternoon shade."
-      },
-      {
-        name: "Japanese Forest Grass",
-        emoji: "🌾",
-        conditions: ["partial-shade", "full-shade"],
-        soil: ["loamy", "moist"],
-        moisture: ["average", "wet"],
-        tags: ["grass", "accent"],
-        description: "Arching, golden-striped grass that lights up shade gardens and containers."
-      },
-      {
-        name: "Coleus",
-        emoji: "🍁",
-        conditions: ["partial-shade", "full-shade"],
-        soil: ["loamy", "sandy"],
-        moisture: ["average", "wet"],
-        tags: ["annual", "foliage"],
-        description: "Vibrant multicolored leaves for shade beds and containers. Easy to root from cuttings."
-      },
-      {
-        name: "Impatiens",
-        emoji: "🌸",
-        conditions: ["partial-shade", "full-shade"],
-        soil: ["loamy", "moist"],
-        moisture: ["average", "wet"],
-        tags: ["annual", "flowers"],
-        description: "Non-stop flowers in shade. Keep soil moist; great for borders and containers."
-      }
+      { name: "Hydrangea", emoji: "🌸", zones: [3,4,5,6,7,8,9], conditions: ["partial-shade","full-shade"], soil: ["loamy","moist","clay"], moisture: ["average","wet"], tags: ["shrub","summer flowers"], description: "Big summer blooms; blue or pink depending on soil pH. Prefers morning sun and afternoon shade." },
+      { name: "Japanese Forest Grass", emoji: "🌾", zones: [4,5,6,7,8,9], conditions: ["partial-shade","full-shade"], soil: ["loamy","moist"], moisture: ["average","wet"], tags: ["grass","accent"], description: "Arching, golden-striped grass that lights up shade gardens and containers." },
+      { name: "Coleus", emoji: "🍁", zones: [10,11,12], conditions: ["partial-shade","full-shade"], soil: ["loamy","sandy"], moisture: ["average","wet"], tags: ["annual","foliage"], description: "Vibrant multicolored leaves for shade beds and containers. Easy to root from cuttings." },
+      { name: "Impatiens", emoji: "🌸", zones: [10,11], conditions: ["partial-shade","full-shade"], soil: ["loamy","moist"], moisture: ["average","wet"], tags: ["annual","flowers"], description: "Non-stop flowers in shade. Keep soil moist; great for borders and containers." },
+      { name: "Coral Bells", emoji: "🍂", zones: [4,5,6,7,8,9], conditions: ["partial-shade","full-shade"], soil: ["loamy","sandy"], moisture: ["average","dry"], tags: ["perennial","foliage"], description: "Colorful, semi-evergreen leaves in shades of purple, lime, and caramel. Tolerates drier shade." }
     ];
+
+    let selectedZone = null;
+
+    const zoneStep = document.getElementById('zone-step');
+    const conditionsStep = document.getElementById('conditions-step');
+    const resultsStep = document.getElementById('results');
+    const selectedZoneDisplay = document.getElementById('selected-zone-display');
+    const selectedZoneValue = document.getElementById('selected-zone-value');
+    const selectedZoneDetails = document.getElementById('selected-zone-details');
 
     const sunlightEl = document.getElementById('sunlight');
     const soilEl = document.getElementById('soil');
@@ -504,16 +588,64 @@
     const plantListEl = document.getElementById('plant-list');
     const matchCountEl = document.getElementById('match-count');
     const scenarioChips = document.querySelectorAll('.chip[data-scenario]');
+    const zoneBadge = document.getElementById('zone-badge');
+    const zoneLegend = document.getElementById('zone-legend');
+
+    function setZone(zone) {
+      selectedZone = Number(zone);
+
+      // Update map visuals
+      document.querySelectorAll('.zone-region').forEach(el => {
+        el.classList.toggle('selected', Number(el.dataset.zone) === selectedZone);
+      });
+
+      // Update legend
+      zoneLegend.querySelectorAll('.zone-key').forEach(k => {
+        const active = Number(k.dataset.zone) === selectedZone;
+        k.classList.toggle('active', active);
+        k.setAttribute('aria-pressed', active);
+      });
+
+      selectedZoneValue.textContent = selectedZone;
+      selectedZoneDetails.textContent = zoneInfo[selectedZone] || '';
+      selectedZoneDisplay.classList.remove('hidden');
+      zoneBadge.textContent = selectedZone;
+    }
+
+    document.querySelectorAll('.zone-region').forEach(el => {
+      el.addEventListener('click', () => setZone(el.dataset.zone));
+    });
+
+    zoneLegend.querySelectorAll('.zone-key').forEach(k => {
+      k.addEventListener('click', () => setZone(k.dataset.zone));
+    });
+
+    document.getElementById('continue-to-conditions').addEventListener('click', () => {
+      if (!selectedZone) return;
+      zoneStep.classList.add('hidden');
+      conditionsStep.classList.remove('hidden');
+      conditionsStep.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+
+    document.getElementById('change-zone').addEventListener('click', () => {
+      conditionsStep.classList.add('hidden');
+      resultsStep.classList.add('hidden');
+      zoneStep.classList.remove('hidden');
+      zoneStep.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
 
     function scorePlant(plant, filters) {
       let score = 0;
       if (filters.sunlight !== 'any' && plant.conditions.includes(filters.sunlight)) score += 3;
       if (filters.soil !== 'any' && plant.soil.includes(filters.soil)) score += 2;
       if (filters.moisture !== 'any' && plant.moisture.includes(filters.moisture)) score += 2;
+      if (plant.zones.includes(selectedZone)) score += 4;
       return score;
     }
 
     function renderPlants() {
+      if (!selectedZone) return;
+
       const filters = {
         sunlight: sunlightEl.value,
         soil: soilEl.value,
@@ -522,21 +654,24 @@
 
       const scored = plants
         .map(p => ({ plant: p, score: scorePlant(p, filters) }))
-        .filter(({ score }) => {
-          // If any specific filter is set, require at least one match (with sunlight weighted highest)
-          const anyFilterSet = filters.sunlight !== 'any' || filters.soil !== 'any' || filters.moisture !== 'any';
-          if (!anyFilterSet) return true;
+        .filter(({ plant, score }) => {
+          // Must be hardy in selected zone
+          if (!plant.zones.includes(selectedZone)) return false;
+
+          const anySpecificFilterSet = filters.sunlight !== 'any' || filters.soil !== 'any' || filters.moisture !== 'any';
+          if (!anySpecificFilterSet) return true;
           return score > 0;
         })
         .sort((a, b) => b.score - a.score);
 
       matchCountEl.textContent = scored.length ? `(${scored.length} matches)` : '';
+      resultsStep.classList.remove('hidden');
 
       if (!scored.length) {
         plantListEl.innerHTML = `
           <div class="empty">
             <div class="empty-icon">🍃</div>
-            <p>No plants matched all those conditions. Try relaxing soil or moisture, or choose “Any.”</p>
+            <p>No plants matched Zone ${selectedZone} with those conditions. Try relaxing soil or moisture, or choose “Any.”</p>
           </div>
         `;
         return;
@@ -549,6 +684,10 @@
           return `<span class="badge ${cls}">${label}</span>`;
         }).join('');
 
+        const minZone = Math.min(...plant.zones);
+        const maxZone = Math.max(...plant.zones);
+        const zoneLabel = minZone === maxZone ? `Zone ${minZone}` : `Zones ${minZone}-${maxZone}`;
+
         return `
           <article class="plant-card">
             <div class="plant-emoji" aria-hidden="true">${plant.emoji}</div>
@@ -556,6 +695,7 @@
               <h3 class="plant-name">${plant.name}</h3>
               <div class="plant-meta">
                 ${condBadges}
+                <span class="badge zone" title="Hardiness range">${zoneLabel}</span>
                 <span class="badge">${plant.moisture.join(' / ')}</span>
                 <span class="badge">${plant.soil.join(' / ')}</span>
               </div>
@@ -564,10 +704,11 @@
           </article>
         `;
       }).join('');
+
+      resultsStep.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 
     function applyScenario(name) {
-      // Reset chips
       scenarioChips.forEach(c => {
         c.classList.toggle('active', c.dataset.scenario === name);
         c.setAttribute('aria-pressed', c.dataset.scenario === name);
@@ -603,10 +744,12 @@
     });
 
     document.getElementById('find-plants').addEventListener('click', renderPlants);
-    [sunlightEl, soilEl, moistureEl].forEach(el => el.addEventListener('change', renderPlants));
+    [sunlightEl, soilEl, moistureEl].forEach(el => el.addEventListener('change', () => {
+      if (!resultsStep.classList.contains('hidden')) renderPlants();
+    }));
 
-    // Load initial scenario
-    applyScenario('shady');
+    // Default: select zone 6 (broad middle-US zone) so the app isn't stuck on first load
+    setZone(6);
   </script>
 </body>
 </html>
