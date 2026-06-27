@@ -1,0 +1,1723 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Yard-to-Plants Planner v2</title>
+<style>
+/* ========== RESET & BASE ========== */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --green-dark: #2d5a3d;
+  --green-mid: #4a8c5c;
+  --green-light: #6dbd7e;
+  --sage: #e8f5e9;
+  --cream: #f9fbf5;
+  --white: #ffffff;
+  --gray: #6b7b6e;
+  --gray-light: #d0d8d2;
+  --gray-bg: #f0f4f1;
+  --red: #e74c3c;
+  --orange: #e67e22;
+  --yellow: #f1c40f;
+  --z3: #00ced1; --z4: #00bfff; --z5: #2ecc71; --z6: #7ed321;
+  --z7: #f1c40f; --z8: #e67e22; --z9: #e74c3c;
+  --shadow: 0 2px 12px rgba(0,0,0,0.1);
+  --shadow-lg: 0 4px 24px rgba(0,0,0,0.15);
+  --radius: 14px;
+  --radius-sm: 8px;
+}
+html { font-size: 16px; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  background: linear-gradient(180deg, #1a3a26 0%, #2d5a3d 100%);
+  color: #1a2e22;
+  display: flex;
+  justify-content: center;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ========== PHONE FRAME ========== */
+.phone {
+  width: 100%;
+  max-width: 420px;
+  min-height: 100vh;
+  background: var(--cream);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 0 60px rgba(0,0,0,0.3);
+}
+
+/* ========== SCREENS ========== */
+.screen {
+  display: none;
+  flex: 1;
+  flex-direction: column;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.screen.active {
+  display: flex;
+  animation: slideIn 0.3s ease;
+}
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(20px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+/* ========== TOP HEADER ========== */
+.top-header {
+  background: linear-gradient(135deg, var(--green-dark), var(--green-mid));
+  color: var(--white);
+  padding: 14px 16px 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+.top-header .back-btn {
+  background: rgba(255,255,255,0.2);
+  border: none;
+  color: var(--white);
+  width: 34px; height: 34px;
+  border-radius: 50%;
+  font-size: 18px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+}
+.top-header .back-btn:hover { background: rgba(255,255,255,0.35); }
+.top-header h1 {
+  font-size: 1.15rem;
+  font-weight: 600;
+  flex: 1;
+  line-height: 1.2;
+}
+.top-header .subtitle {
+  font-size: 0.72rem;
+  opacity: 0.8;
+  font-weight: 400;
+}
+
+/* ========== BOTTOM TAB BAR ========== */
+.tab-bar {
+  display: flex;
+  background: var(--white);
+  border-top: 1px solid var(--gray-light);
+  padding: 6px 0 8px;
+  position: sticky;
+  bottom: 0;
+  z-index: 100;
+  box-shadow: 0 -2px 12px rgba(0,0,0,0.08);
+}
+.tab-item {
+  flex: 1;
+  background: none;
+  border: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 4px;
+  cursor: pointer;
+  color: var(--gray);
+  transition: color 0.2s;
+}
+.tab-item.active { color: var(--green-dark); }
+.tab-item .tab-icon { font-size: 1.3rem; }
+.tab-item .tab-label { font-size: 0.6rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.3px; }
+
+/* ========== CONTENT AREA ========== */
+.content {
+  padding: 16px;
+  padding-bottom: 70px;
+}
+
+/* ========== SCREEN 1: LANDING ========== */
+#screen-landing {
+  background: linear-gradient(180deg, #1a3a26 0%, #2d5a3d 30%, #4a8c5c 70%, #6dbd7e 100%);
+  color: var(--white);
+}
+#screen-landing .top-header {
+  background: transparent;
+  box-shadow: none;
+}
+#screen-landing .content {
+  padding-bottom: 80px;
+}
+.hero-section {
+  text-align: center;
+  padding: 10px 0 20px;
+}
+.hero-logo {
+  font-size: 3.5rem;
+  margin-bottom: 8px;
+}
+.hero-title {
+  font-size: 1.8rem;
+  font-weight: 800;
+  line-height: 1.15;
+  margin-bottom: 6px;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+.hero-subtitle {
+  font-size: 0.9rem;
+  opacity: 0.9;
+  font-weight: 400;
+  margin-bottom: 24px;
+}
+.hero-collage {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+  margin-bottom: 24px;
+  padding: 0 4px;
+}
+.hero-collage-item {
+  background: rgba(255,255,255,0.15);
+  border-radius: 10px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.8rem;
+  backdrop-filter: blur(4px);
+}
+.section-label {
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 12px;
+  opacity: 0.9;
+  padding-left: 2px;
+}
+.goal-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  margin-bottom: 28px;
+}
+.goal-card {
+  background: rgba(255,255,255,0.12);
+  border: 2px solid rgba(255,255,255,0.2);
+  border-radius: var(--radius);
+  padding: 16px 12px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.25s;
+  backdrop-filter: blur(4px);
+}
+.goal-card:hover, .goal-card.selected {
+  background: rgba(255,255,255,0.28);
+  border-color: var(--white);
+  transform: translateY(-2px);
+}
+.goal-card .goal-emoji { font-size: 2rem; margin-bottom: 6px; display: block; }
+.goal-card .goal-name { font-size: 0.82rem; font-weight: 600; }
+.btn-primary {
+  width: 100%;
+  background: var(--white);
+  color: var(--green-dark);
+  border: none;
+  border-radius: 30px;
+  padding: 16px;
+  font-size: 1.05rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+}
+.btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(0,0,0,0.25); }
+.btn-primary:active { transform: translateY(0); }
+.btn-primary.green {
+  background: var(--green-mid);
+  color: var(--white);
+}
+.btn-primary.green { background: linear-gradient(135deg, var(--green-dark), var(--green-mid)); }
+
+/* ========== SCREEN 2: CONDITIONS ========== */
+.section-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--green-dark);
+  margin-bottom: 8px;
+  margin-top: 20px;
+}
+.section-title:first-child { margin-top: 0; }
+.input-group {
+  background: var(--white);
+  border-radius: var(--radius);
+  padding: 14px;
+  margin-bottom: 12px;
+  box-shadow: var(--shadow);
+}
+.input-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--gray);
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+select.styled, input.styled {
+  width: 100%;
+  padding: 12px;
+  border: 2px solid var(--gray-light);
+  border-radius: var(--radius-sm);
+  font-size: 0.95rem;
+  background: var(--cream);
+  color: #1a2e22;
+  -webkit-appearance: none;
+  appearance: none;
+}
+select.styled {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/200/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M6 9L1 4h10z' fill='%234a8c5c'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 36px;
+}
+.option-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.option-chip {
+  flex: 1;
+  min-width: 80px;
+  background: var(--cream);
+  border: 2px solid var(--gray-light);
+  border-radius: var(--radius-sm);
+  padding: 12px 8px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+.option-chip .chip-emoji { font-size: 1.5rem; display: block; margin-bottom: 4px; }
+.option-chip.selected {
+  background: var(--sage);
+  border-color: var(--green-mid);
+  color: var(--green-dark);
+}
+.range-display {
+  text-align: center;
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--green-dark);
+  margin-bottom: 8px;
+}
+.ph-bar {
+  position: relative;
+  height: 30px;
+  border-radius: 15px;
+  background: linear-gradient(90deg, #ff6b6b 0%, #ff8e53 15%, #ffd93d 35%, #6bcf7f 50%, #4ecdc4 65%, #45b7d1 85%, #6c5ce7 100%);
+  margin-bottom: 6px;
+}
+.ph-range-highlight {
+  position: absolute;
+  top: 0; height: 100%;
+  border: 3px solid #fff;
+  border-radius: 15px;
+  box-shadow: 0 0 6px rgba(0,0,0,0.3);
+  pointer-events: none;
+}
+.ph-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.65rem;
+  color: var(--gray);
+}
+.photo-upload {
+  border: 2px dashed var(--gray-light);
+  border-radius: var(--radius);
+  padding: 24px;
+  text-align: center;
+  cursor: pointer;
+  background: var(--white);
+  transition: all 0.2s;
+}
+.photo-upload:hover { border-color: var(--green-mid); background: var(--sage); }
+.photo-upload .upload-emoji { font-size: 2rem; display: block; margin-bottom: 8px; }
+.photo-upload .upload-text { font-size: 0.85rem; color: var(--gray); }
+
+/* ========== SCREEN 3: RECOMMENDATIONS ========== */
+.results-header {
+  padding: 14px 16px 8px;
+  background: var(--sage);
+}
+.results-count {
+  font-size: 0.85rem;
+  color: var(--green-dark);
+  font-weight: 600;
+}
+.sort-bar {
+  display: flex;
+  gap: 8px;
+  margin-top: 6px;
+}
+.sort-btn {
+  background: var(--white);
+  border: 1px solid var(--gray-light);
+  border-radius: 20px;
+  padding: 5px 14px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  color: var(--gray);
+  transition: all 0.2s;
+}
+.sort-btn.active {
+  background: var(--green-dark);
+  color: var(--white);
+  border-color: var(--green-dark);
+}
+.plant-list {
+  padding: 8px 16px 80px;
+}
+.plant-card {
+  background: var(--white);
+  border-radius: var(--radius);
+  padding: 14px;
+  margin-bottom: 10px;
+  box-shadow: var(--shadow);
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+.plant-card:hover { box-shadow: var(--shadow-lg); transform: translateY(-1px); }
+.plant-card:active { transform: scale(0.98); }
+.plant-emoji {
+  font-size: 2.5rem;
+  width: 56px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--sage);
+  border-radius: 12px;
+  flex-shrink: 0;
+}
+.plant-info { flex: 1; min-width: 0; }
+.plant-common {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #1a2e22;
+  margin-bottom: 2px;
+}
+.plant-sci {
+  font-size: 0.75rem;
+  font-style: italic;
+  color: var(--gray);
+  margin-bottom: 6px;
+}
+.plant-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.badge {
+  font-size: 0.65rem;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.badge.sun { background: #fff3cd; color: #856404; }
+.badge.water { background: #d1ecf9; color: #0c5460; }
+.badge.zone { background: #d4edda; color: #155724; }
+.badge.match {
+  background: var(--green-dark);
+  color: var(--white);
+  font-size: 0.7rem;
+}
+.match-score {
+  position: absolute;
+  top: 10px;
+  right: 14px;
+  background: var(--green-dark);
+  color: var(--white);
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 10px;
+}
+.plant-card { position: relative; }
+
+/* ========== SCREEN 4: PLANT DETAIL ========== */
+.detail-header {
+  text-align: center;
+  padding: 20px 16px 16px;
+  background: linear-gradient(180deg, var(--sage), var(--cream));
+}
+.detail-emoji-wrap {
+  width: 100px;
+  height: 100px;
+  margin: 0 auto 10px;
+  background: var(--white);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 3.5rem;
+  box-shadow: var(--shadow);
+}
+.detail-photo-caption {
+  font-size: 0.7rem;
+  color: var(--gray);
+  font-style: italic;
+  margin-bottom: 10px;
+}
+.detail-name {
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: var(--green-dark);
+  margin-bottom: 2px;
+}
+.detail-sci {
+  font-size: 0.85rem;
+  font-style: italic;
+  color: var(--gray);
+}
+.detail-card {
+  background: var(--white);
+  border-radius: var(--radius);
+  padding: 14px;
+  margin: 10px 16px;
+  box-shadow: var(--shadow);
+}
+.detail-card-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--green-mid);
+  margin-bottom: 8px;
+}
+.detail-desc {
+  font-size: 0.88rem;
+  line-height: 1.5;
+  color: #2a3a30;
+}
+
+/* Zone color bar */
+.zone-bar {
+  display: flex;
+  height: 28px;
+  border-radius: 6px;
+  overflow: hidden;
+  margin-bottom: 4px;
+}
+.zone-segment {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: rgba(255,255,255,0.4);
+}
+.zone-segment.in-range {
+  color: #fff;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+}
+.zone-segment.out-of-range {
+  opacity: 0.25;
+}
+.zone-legend {
+  font-size: 0.72rem;
+  color: var(--gray);
+  text-align: center;
+}
+
+/* pH bar */
+.ph-detail-bar {
+  position: relative;
+  height: 24px;
+  border-radius: 12px;
+  background: linear-gradient(90deg, #ff6b6b 0%, #ff8e53 15%, #ffd93d 35%, #6bcf7f 50%, #4ecdc4 65%, #45b7d1 85%, #6c5ce7 100%);
+  margin-bottom: 4px;
+}
+.ph-detail-highlight {
+  position: absolute;
+  top: -2px;
+  height: calc(100% + 4px);
+  border: 3px solid #fff;
+  border-radius: 12px;
+  box-shadow: 0 0 8px rgba(0,0,0,0.3);
+}
+.ph-detail-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.6rem;
+  color: var(--gray);
+}
+.ph-detail-value {
+  text-align: center;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--green-dark);
+  margin-top: 4px;
+}
+
+/* Water needs */
+.water-display {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.water-icon { font-size: 1.5rem; }
+.water-label { font-size: 0.9rem; font-weight: 600; color: #2a3a30; }
+
+/* Sun hours */
+.sun-display {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.sun-icon-large { font-size: 1.4rem; }
+.sun-icon-faded { opacity: 0.25; }
+.sun-hours-text { font-size: 0.85rem; font-weight: 600; color: #2a3a30; margin-left: 4px; }
+
+/* Flowering calendar */
+.flower-cal {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 2px;
+  margin-top: 4px;
+}
+.flower-month {
+  text-align: center;
+  font-size: 0.55rem;
+  padding: 6px 0;
+  border-radius: 4px;
+  background: var(--gray-bg);
+  color: var(--gray);
+  font-weight: 700;
+}
+.flower-month.active {
+  background: linear-gradient(135deg, var(--green-mid), var(--green-light));
+  color: var(--white);
+}
+.flower-legend {
+  font-size: 0.72rem;
+  color: var(--gray);
+  margin-top: 6px;
+}
+
+/* Badges row */
+.badge-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.tag-badge {
+  font-size: 0.7rem;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-weight: 600;
+  background: var(--sage);
+  color: var(--green-dark);
+}
+.tag-badge.resistance { background: #d4edda; color: #155724; }
+.tag-badge.toxic-severe { background: #f8d7da; color: #721c24; }
+.tag-badge.toxic-mild { background: #fff3cd; color: #856404; }
+.tag-badge.goal { background: #e2d5f1; color: #4a2c6e; }
+
+/* Toxicity warning */
+.toxic-warning {
+  background: linear-gradient(135deg, #f8d7da, #f5c6cb);
+  border-left: 4px solid var(--red);
+  border-radius: var(--radius-sm);
+  padding: 12px;
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+}
+.toxic-warning.mild {
+  background: linear-gradient(135deg, #fff3cd, #ffeaa7);
+  border-left-color: var(--orange);
+}
+.toxic-warning .warn-icon { font-size: 1.4rem; }
+.toxic-warning .warn-text { font-size: 0.82rem; line-height: 1.4; color: #721c24; }
+.toxic-warning.mild .warn-text { color: #856404; }
+.toxic-warning .warn-title { font-weight: 700; margin-bottom: 2px; }
+
+/* Maintenance */
+.maint-badge {
+  display: inline-block;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 4px 12px;
+  border-radius: 12px;
+  margin-bottom: 6px;
+}
+.maint-low { background: #d4edda; color: #155724; }
+.maint-medium { background: #fff3cd; color: #856404; }
+.maint-high { background: #f8d7da; color: #721c24; }
+.maint-desc { font-size: 0.82rem; color: #2a3a30; }
+
+/* Mature size */
+.size-display {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+}
+.size-item { text-align: center; }
+.size-value { font-size: 1.3rem; font-weight: 800; color: var(--green-dark); }
+.size-label { font-size: 0.7rem; color: var(--gray); text-transform: uppercase; }
+
+/* ========== SCREEN 5: DATA ENTRY FORM ========== */
+.form-comparison {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 16px;
+  padding-bottom: 80px;
+}
+.form-example-card {
+  background: var(--white);
+  border-radius: var(--radius);
+  padding: 16px;
+  box-shadow: var(--shadow);
+  border-top: 4px solid var(--green-mid);
+}
+.form-example-card.blank {
+  border-top-color: var(--gray-light);
+}
+.form-example-title {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--green-dark);
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.form-example-title .title-emoji { font-size: 1.2rem; }
+.form-example-card.blank .form-example-title { color: var(--gray); }
+.form-field {
+  margin-bottom: 10px;
+}
+.form-field-label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--green-mid);
+  margin-bottom: 3px;
+}
+.form-field-value {
+  font-size: 0.82rem;
+  color: #1a2e22;
+  background: var(--cream);
+  padding: 6px 8px;
+  border-radius: 6px;
+  min-height: 22px;
+}
+.form-field-value.placeholder {
+  color: var(--gray-light);
+  font-style: italic;
+  background: var(--gray-bg);
+}
+.form-field-grid2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+/* ========== UTILITY ========== */
+.icon-text {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.no-results {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--gray);
+}
+.no-results .nr-emoji { font-size: 3rem; margin-bottom: 12px; }
+.no-results .nr-text { font-size: 0.9rem; }
+</style>
+</head>
+<body>
+
+<div class="phone">
+
+<!-- ============================================================ -->
+<!-- SCREEN 1: LANDING PAGE                                       -->
+<!-- ============================================================ -->
+<div class="screen active" id="screen-landing">
+  <div class="top-header">
+    <h1>Yard-to-Plants Planner<span class="subtitle">v2 · Garden Design Tool</span></h1>
+  </div>
+  <div class="content">
+    <div class="hero-section">
+      <div class="hero-logo">🌿🦋🌻</div>
+      <div class="hero-title">Design Your Dream Garden</div>
+      <div class="hero-subtitle">Match your yard's conditions to the perfect plants</div>
+      <div class="hero-collage">
+        <div class="hero-collage-item">🌳</div>
+        <div class="hero-collage-item">🌷</div>
+        <div class="hero-collage-item">🪻</div>
+        <div class="hero-collage-item">🌺</div>
+        <div class="hero-collage-item">🪴</div>
+        <div class="hero-collage-item">🌹</div>
+        <div class="hero-collage-item">🌿</div>
+        <div class="hero-collage-item">🐝</div>
+      </div>
+    </div>
+
+    <div class="section-label">Choose Your Garden Style</div>
+    <div class="goal-grid">
+      <div class="goal-card selected" data-goal="woodland"><span class="goal-emoji">🌲</span><div class="goal-name">Woodland</div></div>
+      <div class="goal-card" data-goal="formal"><span class="goal-emoji">🏛️</span><div class="goal-name">Formal</div></div>
+      <div class="goal-card" data-goal="geometric"><span class="goal-emoji">📐</span><div class="goal-name">Geometric</div></div>
+      <div class="goal-card" data-goal="natural"><span class="goal-emoji">🍃</span><div class="goal-name">Natural</div></div>
+      <div class="goal-card" data-goal="cottage"><span class="goal-emoji">🏡</span><div class="goal-name">Cottage</div></div>
+      <div class="goal-card" data-goal="pollinator"><span class="goal-emoji">🦋</span><div class="goal-name">Pollinator</div></div>
+    </div>
+
+    <button class="btn-primary" onclick="navigateTo('conditions')">Begin Planning →</button>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- SCREEN 2: CONDITIONS INPUT                                   -->
+<!-- ============================================================ -->
+<div class="screen" id="screen-conditions">
+  <div class="top-header">
+    <button class="back-btn" onclick="navigateTo('landing')">‹</button>
+    <h1>Your Yard's Conditions</h1>
+  </div>
+  <div class="content">
+    <div class="section-title">USDA Hardiness Zone</div>
+    <div class="input-group">
+      <div class="input-label">Select your zone</div>
+      <select class="styled" id="zone-select">
+        <option value="3">Zone 3 — Very Cold (-40°F to -30°F)</option>
+        <option value="4">Zone 4 — Cold (-30°F to -20°F)</option>
+        <option value="5" selected>Zone 5 — Cool (-20°F to -10°F)</option>
+        <option value="6">Zone 6 — Mild Cool (-10°F to 0°F)</option>
+        <option value="7">Zone 7 — Mild (0°F to 10°F)</option>
+        <option value="8">Zone 8 — Warm (10°F to 20°F)</option>
+        <option value="9">Zone 9 — Hot (20°F to 30°F)</option>
+      </select>
+    </div>
+
+    <div class="section-title">Sunlight</div>
+    <div class="input-group">
+      <div class="input-label">Hours of direct sun per day</div>
+      <div class="option-row">
+        <div class="option-chip" data-sun="full_shade" onclick="selectSun(this)">
+          <span class="chip-emoji">🌑</span>Full Shade<br><small>1–3 hrs</small>
+        </div>
+        <div class="option-chip" data-sun="partial" onclick="selectSun(this)">
+          <span class="chip-emoji">⛅</span>Partial Sun<br><small>3–6 hrs</small>
+        </div>
+        <div class="option-chip selected" data-sun="full_sun" onclick="selectSun(this)">
+          <span class="chip-emoji">☀️</span>Full Sun<br><small>6+ hrs</small>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-title">Soil Type</div>
+    <div class="input-group">
+      <div class="input-label">What's your soil like?</div>
+      <div class="option-row">
+        <div class="option-chip" data-soil="clay" onclick="selectSoil(this)"><span class="chip-emoji">🟤</span>Clay</div>
+        <div class="option-chip selected" data-soil="loam" onclick="selectSoil(this)"><span class="chip-emoji">🟫</span>Loam</div>
+        <div class="option-chip" data-soil="sandy" onclick="selectSoil(this)"><span class="chip-emoji">🟡</span>Sandy</div>
+        <div class="option-chip" data-soil="chalky" onclick="selectSoil(this)"><span class="chip-emoji">⚪</span>Chalky</div>
+        <div class="option-chip" data-soil="peat" onclick="selectSoil(this)"><span class="chip-emoji">⚫</span>Peat</div>
+      </div>
+    </div>
+
+    <div class="section-title">Soil pH Range</div>
+    <div class="input-group">
+      <div class="input-label">Soil acidity (pH)</div>
+      <div class="range-display" id="ph-display">pH 5.5 – 7.5</div>
+      <div class="ph-bar">
+        <div class="ph-range-highlight" id="ph-highlight" style="left: 39.3%; width: 28.6%;"></div>
+      </div>
+      <div class="ph-labels"><span>4.0 Acidic</span><span>7.0 Neutral</span><span>10.0 Alkaline</span></div>
+      <div style="margin-top:10px;">
+        <label style="font-size:0.75rem; color:var(--gray);">Min pH: <strong id="ph-min-val">5.5</strong></label>
+        <input type="range" min="4" max="9" step="0.1" value="5.5" id="ph-min" style="width:100%;" oninput="updatePhRange()">
+        <label style="font-size:0.75rem; color:var(--gray);">Max pH: <strong id="ph-max-val">7.5</strong></label>
+        <input type="range" min="4" max="9" step="0.1" value="7.5" id="ph-max" style="width:100%;" oninput="updatePhRange()">
+      </div>
+    </div>
+
+    <div class="section-title">Moisture Level</div>
+    <div class="input-group">
+      <div class="input-label">How moist is your soil?</div>
+      <div class="option-row">
+        <div class="option-chip" data-moisture="dry" onclick="selectMoisture(this)"><span class="chip-emoji">🏜️</span>Dry</div>
+        <div class="option-chip selected" data-moisture="medium" onclick="selectMoisture(this)"><span class="chip-emoji">💧</span>Medium</div>
+        <div class="option-chip" data-moisture="wet" onclick="selectMoisture(this)"><span class="chip-emoji">🌊</span>Wet</div>
+      </div>
+    </div>
+
+    <div class="section-title">Yard Photo</div>
+    <div class="photo-upload">
+      <span class="upload-emoji">📸</span>
+      <div class="upload-text">Tap to upload a photo of your yard<br><small>(optional — for your reference)</small></div>
+    </div>
+
+    <div style="margin-top:20px;">
+      <button class="btn-primary green" onclick="findPlants()">🔍 Find Plants</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- SCREEN 3: PLANT RECOMMENDATIONS                              -->
+<!-- ============================================================ -->
+<div class="screen" id="screen-results">
+  <div class="top-header">
+    <button class="back-btn" onclick="navigateTo('conditions')">‹</button>
+    <h1>Recommended Plants</h1>
+  </div>
+  <div class="results-header">
+    <div class="results-count" id="results-count">Loading...</div>
+    <div class="sort-bar">
+      <button class="sort-btn active" data-sort="match" onclick="sortPlants('match', this)">Best Match</button>
+      <button class="sort-btn" data-sort="name" onclick="sortPlants('name', this)">A–Z</button>
+      <button class="sort-btn" data-sort="maintenance" onclick="sortPlants('maintenance', this)">Easy Care</button>
+    </div>
+  </div>
+  <div class="plant-list" id="plant-list"></div>
+</div>
+
+<!-- ============================================================ -->
+<!-- SCREEN 4: PLANT DETAIL                                       -->
+<!-- ============================================================ -->
+<div class="screen" id="screen-detail">
+  <div class="top-header">
+    <button class="back-btn" onclick="navigateTo('results')">‹</button>
+    <h1 id="detail-header-name">Plant Detail</h1>
+  </div>
+  <div id="detail-content" style="padding-bottom:80px;"></div>
+</div>
+
+<!-- ============================================================ -->
+<!-- SCREEN 5: DATA ENTRY FORM                                    -->
+<!-- ============================================================ -->
+<div class="screen" id="screen-form">
+  <div class="top-header">
+    <button class="back-btn" onclick="navigateTo('landing')">‹</button>
+    <h1>Data Entry Form</h1>
+  </div>
+  <div class="form-comparison">
+    <div style="text-align:center; padding:4px 0;">
+      <div style="font-size:0.85rem; color:var(--gray);">See what info you'll enter for each plant.<br>Below: a filled example (left) and blank template (right).</div>
+    </div>
+
+    <!-- FILLED EXAMPLE: Boxwood -->
+    <div class="form-example-card">
+      <div class="form-example-title"><span class="title-emoji">🌳</span> Filled Example: Boxwood</div>
+      <div class="form-field"><div class="form-field-label">Common Name</div><div class="form-field-value">Boxwood</div></div>
+      <div class="form-field"><div class="form-field-label">Scientific Name</div><div class="form-field-value"><em>Buxus sempervirens</em></div></div>
+      <div class="form-field-grid2">
+        <div class="form-field"><div class="form-field-label">Category</div><div class="form-field-value">Shrub</div></div>
+        <div class="form-field"><div class="form-field-label">Growth Habit</div><div class="form-field-value">Compact</div></div>
+      </div>
+      <div class="form-field"><div class="form-field-label">Description</div><div class="form-field-value">Evergreen shrub with dense, small leaves. Ideal for hedges and formal topiary. Holds shape well with pruning.</div></div>
+      <div class="form-field-grid2">
+        <div class="form-field"><div class="form-field-label">USDA Zones</div><div class="form-field-value">5–8</div></div>
+        <div class="form-field"><div class="form-field-label">Soil pH Range</div><div class="form-field-value">6.5–7.5</div></div>
+      </div>
+      <div class="form-field-grid2">
+        <div class="form-field"><div class="form-field-label">Water Needs</div><div class="form-field-value">Moderate</div></div>
+        <div class="form-field"><div class="form-field-label">Sun Hours/Day</div><div class="form-field-value">3–6 hrs (partial sun)</div></div>
+      </div>
+      <div class="form-field"><div class="form-field-label">Soil Types</div><div class="form-field-value">Loam, Clay, Sandy, Chalky</div></div>
+      <div class="form-field-grid2">
+        <div class="form-field"><div class="form-field-label">Flowering Months</div><div class="form-field-value">Mar–May</div></div>
+        <div class="form-field"><div class="form-field-label">Flower Color</div><div class="form-field-value">Cream / Yellow-green</div></div>
+      </div>
+      <div class="form-field-grid2">
+        <div class="form-field"><div class="form-field-label">Toxicity</div><div class="form-field-value">⚠️ Toxic (moderate)</div></div>
+        <div class="form-field"><div class="form-field-label">Maintenance Level</div><div class="form-field-value">Medium</div></div>
+      </div>
+      <div class="form-field"><div class="form-field-label">Maintenance Description</div><div class="form-field-value">Prune 2–3 times per year to maintain shape. Water during dry spells. Mulch root zone.</div></div>
+      <div class="form-field-grid2">
+        <div class="form-field"><div class="form-field-label">Mature Height</div><div class="form-field-value">6 ft (1.8 m)</div></div>
+        <div class="form-field"><div class="form-field-label">Mature Width</div><div class="form-field-value">2.4 ft (0.7 m)</div></div>
+      </div>
+      <div class="form-field"><div class="form-field-label">Tags</div><div class="form-field-value">formal, geometric, hedge, evergreen</div></div>
+    </div>
+
+    <!-- BLANK TEMPLATE -->
+    <div class="form-example-card blank">
+      <div class="form-example-title"><span class="title-emoji">📝</span> Blank Template (New Plant)</div>
+      <div class="form-field"><div class="form-field-label">Common Name</div><div class="form-field-value placeholder">e.g., Rosemary</div></div>
+      <div class="form-field"><div class="form-field-label">Scientific Name</div><div class="form-field-value placeholder">e.g., Salvia rosmarinus</div></div>
+      <div class="form-field-grid2">
+        <div class="form-field"><div class="form-field-label">Category</div><div class="form-field-value placeholder">Shrub / Perennial / Tree…</div></div>
+        <div class="form-field"><div class="form-field-label">Growth Habit</div><div class="form-field-value placeholder">Upright / Mounding / Clumping…</div></div>
+      </div>
+      <div class="form-field"><div class="form-field-label">Description</div><div class="form-field-value placeholder">Brief description of the plant…</div></div>
+      <div class="form-field-grid2">
+        <div class="form-field"><div class="form-field-label">USDA Zones</div><div class="form-field-value placeholder">e.g., 7–10</div></div>
+        <div class="form-field"><div class="form-field-label">Soil pH Range</div><div class="form-field-value placeholder">e.g., 6.0–7.5</div></div>
+      </div>
+      <div class="form-field-grid2">
+        <div class="form-field"><div class="form-field-label">Water Needs</div><div class="form-field-value placeholder">Drought / Low / Moderate / High</div></div>
+        <div class="form-field"><div class="form-field-label">Sun Hours/Day</div><div class="form-field-value placeholder">e.g., 6–10 hrs</div></div>
+      </div>
+      <div class="form-field"><div class="form-field-label">Soil Types</div><div class="form-field-value placeholder">Clay, Loam, Sandy, Chalky, Peat</div></div>
+      <div class="form-field-grid2">
+        <div class="form-field"><div class="form-field-label">Flowering Months</div><div class="form-field-value placeholder">e.g., May–Jul</div></div>
+        <div class="form-field"><div class="form-field-label">Flower Color</div><div class="form-field-value placeholder">e.g., Blue, Purple</div></div>
+      </div>
+      <div class="form-field-grid2">
+        <div class="form-field"><div class="form-field-label">Toxicity</div><div class="form-field-value placeholder">Non-toxic / Mild / Severe</div></div>
+        <div class="form-field"><div class="form-field-label">Maintenance Level</div><div class="form-field-value placeholder">Low / Medium / High</div></div>
+      </div>
+      <div class="form-field"><div class="form-field-label">Maintenance Description</div><div class="form-field-value placeholder">Care instructions…</div></div>
+      <div class="form-field-grid2">
+        <div class="form-field"><div class="form-field-label">Mature Height</div><div class="form-field-value placeholder">e.g., 3 ft (90 cm)</div></div>
+        <div class="form-field"><div class="form-field-label">Mature Width</div><div class="form-field-value placeholder">e.g., 4 ft (120 cm)</div></div>
+      </div>
+      <div class="form-field"><div class="form-field-label">Tags</div><div class="form-field-value placeholder">formal, cottage, pollinator, evergreen…</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- BOTTOM TAB BAR                                               -->
+<!-- ============================================================ -->
+<div class="tab-bar">
+  <button class="tab-item active" data-tab="landing" onclick="navigateTo('landing')">
+    <span class="tab-icon">🏠</span><span class="tab-label">Home</span>
+  </button>
+  <button class="tab-item" data-tab="conditions" onclick="navigateTo('conditions')">
+    <span class="tab-icon">🌡️</span><span class="tab-label">Conditions</span>
+  </button>
+  <button class="tab-item" data-tab="results" onclick="navigateTo('results')">
+    <span class="tab-icon">🌿</span><span class="tab-label">Plants</span>
+  </button>
+  <button class="tab-item" data-tab="detail" onclick="navigateTo('detail')">
+    <span class="tab-icon">📋</span><span class="tab-label">Detail</span>
+  </button>
+  <button class="tab-item" data-tab="form" onclick="navigateTo('form')">
+    <span class="tab-icon">📝</span><span class="tab-label">Form</span>
+  </button>
+</div>
+
+</div><!-- /phone -->
+
+<script>
+// ============================================================
+// PLANT DATA (8 seed plants)
+// ============================================================
+const PLANTS = [
+  {
+    id: 1, emoji: "🌳", common: "Boxwood", sci: "Buxus sempervirens",
+    category: "Shrub", habit: "Compact",
+    desc: "Evergreen shrub with dense, small leaves. Ideal for hedges and formal topiary. Holds shape well with pruning and provides year-round structure.",
+    zoneMin: 5, zoneMax: 8, phMin: 6.5, phMax: 7.5,
+    water: "moderate", sunLabel: "Partial Sun", sunMin: 3, sunMax: 6, sunCategory: "partial",
+    soilTypes: ["loam","clay","sandy","chalky"],
+    flowerMonths: [3,4,5], flowerColor: "Cream / Yellow-green",
+    toxicity: "moderate", toxicityLabel: "Toxic (moderate)",
+    maintenance: "medium", maintDesc: "Prune 2–3 times per year to maintain shape. Water during dry spells. Mulch root zone annually.",
+    heightFt: 6, heightCm: 180, widthFt: 2.4, widthCm: 70,
+    goals: ["formal","geometric"], tags: ["formal","geometric","hedge","evergreen"],
+    diseases: ["Boxwood blight resistant (some cultivars)","Deer resistant"]
+  },
+  {
+    id: 2, emoji: "🌸", common: "Bigleaf Hydrangea", sci: "Hydrangea macrophylla",
+    category: "Shrub", habit: "Mounding",
+    desc: "Showy, large flower clusters in blue, pink, or purple depending on soil pH. A garden favorite for long summer blooms and lush foliage.",
+    zoneMin: 5, zoneMax: 9, phMin: 5.2, phMax: 6.8,
+    water: "high", sunLabel: "Partial Sun", sunMin: 4, sunMax: 6, sunCategory: "partial",
+    soilTypes: ["loam","peat","clay"],
+    flowerMonths: [6,7,8,9], flowerColor: "Blue / Pink / Purple",
+    toxicity: "mild", toxicityLabel: "Toxic (mild to moderate)",
+    maintenance: "medium", maintDesc: "Prune after flowering. Keep soil consistently moist. Mulch heavily. Protect from late frost.",
+    heightFt: 6.6, heightCm: 200, widthFt: 6.6, widthCm: 200,
+    goals: ["cottage","natural"], tags: ["cottage","natural","flowering","summer"],
+    diseases: ["Powdery mildew susceptible","Slug resistant"]
+  },
+  {
+    id: 3, emoji: "🌺", common: "Daylily", sci: "Hemerocallis fulva",
+    category: "Perennial", habit: "Clumping",
+    desc: "Hardy, adaptable perennial with trumpet-shaped flowers that bloom for a single day each but in profusion over weeks. Tough and forgiving.",
+    zoneMin: 3, zoneMax: 9, phMin: 6.0, phMax: 7.5,
+    water: "low", sunLabel: "Full Sun", sunMin: 6, sunMax: 10, sunCategory: "full_sun",
+    soilTypes: ["loam","sandy","clay","chalky"],
+    flowerMonths: [6,7,8], flowerColor: "Orange / Yellow / Red",
+    toxicity: "nontoxic", toxicityLabel: "Non-toxic (moderate to pets)",
+    maintenance: "low", maintDesc: "Deadhead spent blooms. Divide every 3–5 years. Tolerates neglect once established.",
+    heightFt: 3, heightCm: 90, widthFt: 2.5, widthCm: 75,
+    goals: ["cottage","natural"], tags: ["cottage","natural","drought-tolerant","cut-flower"],
+    diseases: ["Rust resistant","Daylily rust (some cultivars)"]
+  },
+  {
+    id: 4, emoji: "🌿", common: "Hosta", sci: "Hosta sieboldiana",
+    category: "Perennial", habit: "Mounding",
+    desc: "Lush, broad-leaf shade garden staple grown for its dramatic foliage in greens, blues, and variegated patterns. Sends up tall flower scapes.",
+    zoneMin: 3, zoneMax: 8, phMin: 5.5, phMax: 7.5,
+    water: "high", sunLabel: "Full Shade", sunMin: 1, sunMax: 3, sunCategory: "full_shade",
+    soilTypes: ["loam","peat","clay"],
+    flowerMonths: [6,7], flowerColor: "Lavender / White",
+    toxicity: "mild", toxicityLabel: "Toxic (mild to moderate, pets)",
+    maintenance: "medium", maintDesc: "Keep soil moist. Remove spent flower scapes. Divide in spring every 4–5 years. Protect from slugs.",
+    heightFt: 2.5, heightCm: 75, widthFt: 4, widthCm: 120,
+    goals: ["woodland","natural"], tags: ["woodland","natural","shade","foliage"],
+    diseases: ["Slug susceptible","Deer resistant"]
+  },
+  {
+    id: 5, emoji: "💜", common: "English Lavender", sci: "Lavandula angustifolia",
+    category: "Shrub", habit: "Mounding",
+    desc: "Fragrant, silvery-gray subshrub with purple flower spikes. Beloved by pollinators and ideal for borders, hedges, and aromatherapy.",
+    zoneMin: 5, zoneMax: 9, phMin: 6.5, phMax: 8.0,
+    water: "drought", sunLabel: "Full Sun", sunMin: 8, sunMax: 14, sunCategory: "full_sun",
+    soilTypes: ["sandy","loam","chalky"],
+    flowerMonths: [6,7], flowerColor: "Purple / Lavender",
+    toxicity: "nontoxic", toxicityLabel: "Non-toxic (mild to pets)",
+    maintenance: "medium", maintDesc: "Prune hard after flowering to maintain shape. Needs excellent drainage. Drought tolerant once established.",
+    heightFt: 2.5, heightCm: 75, widthFt: 3, widthCm: 90,
+    goals: ["formal","cottage"], tags: ["formal","cottage","drought-tolerant","pollinator","fragrant"],
+    diseases: ["Deer resistant","Rabbit resistant","Root rot in wet soil"]
+  },
+  {
+    id: 6, emoji: "🌹", common: "Shrub Rose 'Knock Out'", sci: "Rosa 'Radrazz'",
+    category: "Shrub", habit: "Upright",
+    desc: "Disease-resistant, repeat-blooming landscape rose. Produces waves of cherry-red flowers from spring to frost with minimal care.",
+    zoneMin: 4, zoneMax: 9, phMin: 5.5, phMax: 7.0,
+    water: "moderate", sunLabel: "Full Sun", sunMin: 6, sunMax: 10, sunCategory: "full_sun",
+    soilTypes: ["loam","clay","sandy"],
+    flowerMonths: [5,6,7,8,9], flowerColor: "Cherry Red / Pink",
+    toxicity: "mild", toxicityLabel: "Toxic (mild)",
+    maintenance: "low", maintDesc: "Prune back to 12\" in early spring. Deadhead not required. Fertilize monthly during bloom season.",
+    heightFt: 4, heightCm: 120, widthFt: 4, widthCm: 120,
+    goals: ["cottage","natural"], tags: ["cottage","natural","reblooming","disease-resistant"],
+    diseases: ["Black spot resistant","Powdery mildew resistant","Japanese beetle susceptible"]
+  },
+  {
+    id: 7, emoji: "🌺", common: "Reblooming Azalea", sci: "Rhododendron 'Autumn Twist'",
+    category: "Shrub", habit: "Upright",
+    desc: "Encore-type azalea that blooms in spring and again in fall. Vivid pink-and-white flowers cover the plant. Needs acidic soil.",
+    zoneMin: 6, zoneMax: 9, phMin: 4.5, phMax: 6.0,
+    water: "moderate", sunLabel: "Partial Shade", sunMin: 3, sunMax: 6, sunCategory: "partial",
+    soilTypes: ["peat","loam","sandy"],
+    flowerMonths: [4,5,9,10], flowerColor: "Pink / White bi-color",
+    toxicity: "severe", toxicityLabel: "⚠️ TOXIC — Severe",
+    maintenance: "low", maintDesc: "Feed with acid-loving plant fertilizer. Light prune after spring bloom. Mulch with pine bark.",
+    heightFt: 5, heightCm: 150, widthFt: 4, widthCm: 120,
+    goals: ["woodland","natural"], tags: ["woodland","natural","reblooming","acid-loving","evergreen"],
+    diseases: ["Petal blight susceptible","Lace bug susceptible"]
+  },
+  {
+    id: 8, emoji: "🌾", common: "Feather Reed Grass", sci: "Calamagrostis 'Karl Foerster'",
+    category: "Perennial", habit: "Upright",
+    desc: "Architectural ornamental grass with upright flower plumes that sway gracefully. Provides vertical accent and winter interest.",
+    zoneMin: 4, zoneMax: 9, phMin: 5.5, phMax: 7.5,
+    water: "low", sunLabel: "Full Sun", sunMin: 6, sunMax: 12, sunCategory: "full_sun",
+    soilTypes: ["loam","clay","sandy","chalky"],
+    flowerMonths: [5,6,7,8,9,10,11], flowerColor: "Golden / Pinkish-bronze",
+    toxicity: "nontoxic", toxicityLabel: "Non-toxic",
+    maintenance: "low", maintDesc: "Cut back to 6\" in late winter before new growth. Divide every 3–4 years. Self-supporting.",
+    heightFt: 5, heightCm: 150, widthFt: 2, widthCm: 60,
+    goals: ["geometric","natural"], tags: ["geometric","natural","ornamental-grass","winter-interest"],
+    diseases: ["Disease free","Deer resistant"]
+  }
+];
+
+const ZONE_COLORS = {3:'#00ced1',4:'#00bfff',5:'#2ecc71',6:'#7ed321',7:'#f1c40f',8:'#e67e22',9:'#e74c3c'};
+const MONTH_NAMES = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const MONTH_FULL = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+
+// ============================================================
+// STATE
+// ============================================================
+let selectedGoal = 'woodland';
+let selectedSun = 'full_sun';
+let selectedSoil = 'loam';
+let selectedMoisture = 'medium';
+let phMinVal = 5.5;
+let phMaxVal = 7.5;
+let selectedZone = 5;
+let currentSort = 'match';
+let filteredPlants = [];
+
+// ============================================================
+// NAVIGATION
+// ============================================================
+function navigateTo(screenName) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  const screen = document.getElementById('screen-' + screenName);
+  if (screen) {
+    screen.classList.add('active');
+    screen.scrollTop = 0;
+  }
+  // Update tab bar
+  document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
+  const tab = document.querySelector(`.tab-item[data-tab="${screenName}"]`);
+  if (tab) tab.classList.add('active');
+
+  // If navigating to results, render them
+  if (screenName === 'results') {
+    if (filteredPlants.length === 0) findPlants();
+  }
+  // If navigating to detail without a plant selected, show first plant
+  if (screenName === 'detail') {
+    const detailContent = document.getElementById('detail-content');
+    if (!detailContent.innerHTML || detailContent.innerHTML.trim() === '') {
+      showPlantDetail(PLANTS[0].id);
+    }
+  }
+}
+
+// ============================================================
+// GOAL SELECTION (Landing)
+// ============================================================
+document.querySelectorAll('.goal-card').forEach(card => {
+  card.addEventListener('click', function() {
+    document.querySelectorAll('.goal-card').forEach(c => c.classList.remove('selected'));
+    this.classList.add('selected');
+    selectedGoal = this.dataset.goal;
+  });
+});
+
+// ============================================================
+// CONDITIONS INPUT HANDLERS
+// ============================================================
+function selectSun(el) {
+  document.querySelectorAll('[data-sun]').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedSun = el.dataset.sun;
+}
+
+function selectSoil(el) {
+  document.querySelectorAll('[data-soil]').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedSoil = el.dataset.soil;
+}
+
+function selectMoisture(el) {
+  document.querySelectorAll('[data-moisture]').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedMoisture = el.dataset.moisture;
+}
+
+function updatePhRange() {
+  let minP = parseFloat(document.getElementById('ph-min').value);
+  let maxP = parseFloat(document.getElementById('ph-max').value);
+  if (minP > maxP) { [minP, maxP] = [maxP, minP]; }
+  phMinVal = minP;
+  phMaxVal = maxP;
+  document.getElementById('ph-min-val').textContent = minP.toFixed(1);
+  document.getElementById('ph-max-val').textContent = maxP.toFixed(1);
+  document.getElementById('ph-display').textContent = `pH ${minP.toFixed(1)} – ${maxP.toFixed(1)}`;
+  // Update highlight bar (4.0 to 9.0 range => width of bar)
+  const totalMin = 4.0, totalMax = 9.0, totalRange = totalMax - totalMin;
+  const leftPct = ((minP - totalMin) / totalRange) * 100;
+  const widthPct = ((maxP - minP) / totalRange) * 100;
+  const hl = document.getElementById('ph-highlight');
+  hl.style.left = leftPct + '%';
+  hl.style.width = widthPct + '%';
+}
+
+// Zone select
+document.getElementById('zone-select').addEventListener('change', function() {
+  selectedZone = parseInt(this.value);
+});
+
+// ============================================================
+// PLANT FILTERING & SCORING
+// ============================================================
+function findPlants() {
+  selectedZone = parseInt(document.getElementById('zone-select').value);
+
+  filteredPlants = PLANTS.map(plant => {
+    let score = 0;
+    let reasons = [];
+
+    // Zone match (30 pts)
+    if (selectedZone >= plant.zoneMin && selectedZone <= plant.zoneMax) {
+      score += 30;
+      reasons.push('zone');
+    }
+
+    // Sun match (25 pts)
+    if (plant.sunCategory === selectedSun) {
+      score += 25;
+    } else {
+      // Partial match if adjacent
+      if (selectedSun === 'partial' && (plant.sunCategory === 'full_shade' || plant.sunCategory === 'full_sun')) {
+        score += 10;
+      }
+    }
+
+    // Soil match (20 pts)
+    if (plant.soilTypes.includes(selectedSoil)) {
+      score += 20;
+    }
+
+    // pH match (15 pts)
+    // Check if plant's pH range overlaps with user's selected pH range
+    if (plant.phMin <= phMaxVal && plant.phMax >= phMinVal) {
+      score += 15;
+    }
+
+    // Moisture match (10 pts)
+    const moistureMap = { 'dry': ['drought','low'], 'medium': ['low','moderate'], 'wet': ['moderate','high'] };
+    if (moistureMap[selectedMoisture] && moistureMap[selectedMoisture].includes(plant.water)) {
+      score += 10;
+    }
+
+    // Goal match (bonus 5 pts)
+    if (plant.goals.includes(selectedGoal)) {
+      score += 5;
+    }
+
+    return { ...plant, matchScore: score };
+  });
+
+  // Default sort by match score
+  sortPlants(currentSort, document.querySelector('.sort-btn.active'));
+  navigateTo('results');
+}
+
+function sortPlants(sortKey, btn) {
+  currentSort = sortKey;
+  document.querySelectorAll('.sort-btn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+
+  if (sortKey === 'match') {
+    filteredPlants.sort((a,b) => b.matchScore - a.matchScore);
+  } else if (sortKey === 'name') {
+    filteredPlants.sort((a,b) => a.common.localeCompare(b.common));
+  } else if (sortKey === 'maintenance') {
+    const order = { 'low': 0, 'medium': 1, 'high': 2 };
+    filteredPlants.sort((a,b) => order[a.maintenance] - order[b.maintenance]);
+  }
+
+  renderPlantList();
+}
+
+function renderPlantList() {
+  const list = document.getElementById('plant-list');
+  const countEl = document.getElementById('results-count');
+
+  if (filteredPlants.length === 0) {
+    list.innerHTML = `<div class="no-results"><div class="nr-emoji">🌱</div><div class="nr-text">No plants match your conditions.<br>Try adjusting your filters.</div></div>`;
+    countEl.textContent = '0 plants found';
+    return;
+  }
+
+  const visible = filteredPlants.filter(p => p.matchScore > 0);
+  countEl.textContent = `${visible.length} plant${visible.length !== 1 ? 's' : ''} match your yard`;
+
+  list.innerHTML = filteredPlants.map(plant => {
+    const scoreClass = plant.matchScore >= 80 ? 'badge match' : plant.matchScore >= 50 ? 'badge match' : 'badge match';
+    const scoreLabel = plant.matchScore >= 80 ? 'Excellent' : plant.matchScore >= 60 ? 'Good' : plant.matchScore >= 40 ? 'Fair' : 'Low';
+    return `
+      <div class="plant-card" onclick="showPlantDetail(${plant.id})">
+        <div class="plant-emoji">${plant.emoji}</div>
+        <div class="plant-info">
+          <div class="plant-common">${plant.common}</div>
+          <div class="plant-sci">${plant.sci}</div>
+          <div class="plant-badges">
+            <span class="badge sun">${plant.sunLabel}</span>
+            <span class="badge water">${capitalize(plant.water)} water</span>
+            <span class="badge zone">Zone ${plant.zoneMin}-${plant.zoneMax}</span>
+          </div>
+        </div>
+        <div class="match-score">${plant.matchScore}%</div>
+      </div>
+    `;
+  }).join('');
+}
+
+function capitalize(str) {
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
+// ============================================================
+// PLANT DETAIL VIEW
+// ============================================================
+function showPlantDetail(plantId) {
+  const plant = PLANTS.find(p => p.id === plantId);
+  if (!plant) return;
+
+  document.getElementById('detail-header-name').textContent = plant.common;
+  const content = document.getElementById('detail-content');
+  content.innerHTML = '';
+
+  // Header section
+  content.innerHTML += `
+    <div class="detail-header">
+      <div class="detail-emoji-wrap">${plant.emoji}</div>
+      <div class="detail-photo-caption">📷 Mature plant photo coming here</div>
+      <div class="detail-name">${plant.common}</div>
+      <div class="detail-sci">${plant.sci}</div>
+    </div>
+  `;
+
+  // Description
+  content.innerHTML += `
+    <div class="detail-card">
+      <div class="detail-card-label">Description</div>
+      <div class="detail-desc">${plant.desc}</div>
+    </div>
+  `;
+
+  // USDA Hardiness Zones — visual color bar
+  let zoneBarHTML = '';
+  for (let z = 3; z <= 9; z++) {
+    const inRange = z >= plant.zoneMin && z <= plant.zoneMax;
+    zoneBarHTML += `<div class="zone-segment ${inRange ? 'in-range' : 'out-of-range'}" style="background:${ZONE_COLORS[z]};">${z}</div>`;
+  }
+  content.innerHTML += `
+    <div class="detail-card">
+      <div class="detail-card-label">USDA Hardiness Zones</div>
+      <div class="zone-bar">${zoneBarHTML}</div>
+      <div class="zone-legend">Grows in zones ${plant.zoneMin}–${plant.zoneMax}</div>
+    </div>
+  `;
+
+  // Soil pH Range — visual bar
+  const phTotalMin = 3.5, phTotalMax = 9.5, phTotalRange = phTotalMax - phTotalMin;
+  const phLeft = ((plant.phMin - phTotalMin) / phTotalRange) * 100;
+  const phWidth = ((plant.phMax - plant.phMin) / phTotalRange) * 100;
+  content.innerHTML += `
+    <div class="detail-card">
+      <div class="detail-card-label">Soil pH Range</div>
+      <div class="ph-detail-bar">
+        <div class="ph-detail-highlight" style="left:${phLeft}%; width:${phWidth}%;"></div>
+      </div>
+      <div class="ph-detail-labels"><span>4.0</span><span>5.0</span><span>6.0</span><span>7.0</span><span>8.0</span><span>9.0</span></div>
+      <div class="ph-detail-value">pH ${plant.phMin.toFixed(1)} – ${plant.phMax.toFixed(1)}</div>
+    </div>
+  `;
+
+  // Water Needs
+  const waterIcons = { 'drought': '🏜️', 'low': '💧', 'moderate': '💧💧', 'high': '💧💧💧' };
+  const waterLabels = { 'drought': 'Drought Tolerant', 'low': 'Low Water', 'moderate': 'Moderate Water', 'high': 'High Water' };
+  content.innerHTML += `
+    <div class="detail-card">
+      <div class="detail-card-label">Water Needs</div>
+      <div class="water-display">
+        <span class="water-icon">${waterIcons[plant.water]}</span>
+        <span class="water-label">${waterLabels[plant.water]}</span>
+      </div>
+    </div>
+  `;
+
+  // Sun Hours
+  let sunIconsHTML = '';
+  const maxSunIcons = 14;
+  for (let i = 0; i < maxSunIcons; i++) {
+    sunIconsHTML += `<span class="sun-icon-large ${i >= plant.sunMin && i < plant.sunMax ? '' : 'sun-icon-faded'}">☀️</span>`;
+  }
+  content.innerHTML += `
+    <div class="detail-card">
+      <div class="detail-card-label">Sun Hours / Day</div>
+      <div class="sun-display">${sunIconsHTML}</div>
+      <div class="sun-hours-text">${plant.sunLabel} · ${plant.sunMin}–${plant.sunMax} hours</div>
+    </div>
+  `;
+
+  // Flowering Period — month-by-month calendar
+  let calHTML = '';
+  for (let m = 0; m < 12; m++) {
+    const isActive = plant.flowerMonths.includes(m + 1);
+    calHTML += `<div class="flower-month ${isActive ? 'active' : ''}">${MONTH_NAMES[m]}</div>`;
+  }
+  const flowerMonthNames = plant.flowerMonths.map(m => MONTH_NAMES[m-1]).join(', ');
+  content.innerHTML += `
+    <div class="detail-card">
+      <div class="detail-card-label">Flowering Period</div>
+      <div class="flower-cal">${calHTML}</div>
+      <div class="flower-legend">Blooms: ${flowerMonthNames} · ${plant.flowerColor}</div>
+    </div>
+  `;
+
+  // Disease / Pest Resistance
+  content.innerHTML += `
+    <div class="detail-card">
+      <div class="detail-card-label">Disease & Pest Resistance</div>
+      <div class="badge-row">
+        ${plant.diseases.map(d => `<span class="tag-badge resistance">${d}</span>`).join('')}
+      </div>
+    </div>
+  `;
+
+  // Growth Habit
+  const habitIcons = { 'Compact': '🌿', 'Mounding': '⛰️', 'Clumping': '🪴', 'Upright': '📈' };
+  content.innerHTML += `
+    <div class="detail-card">
+      <div class="detail-card-label">Growth Habit</div>
+      <div class="icon-text">
+        <span style="font-size:1.5rem;">${habitIcons[plant.habit] || '🌱'}</span>
+        <span style="font-size:0.9rem; font-weight:600;">${plant.habit} · ${plant.category}</span>
+      </div>
+    </div>
+  `;
+
+  // Toxicity
+  let toxicHTML = '';
+  if (plant.toxicity === 'severe') {
+    toxicHTML = `
+      <div class="detail-card" style="padding:0; box-shadow:none; background:transparent;">
+        <div class="toxic-warning">
+          <span class="warn-icon">⚠️</span>
+          <div class="warn-text">
+            <div class="warn-title">⚠️ TOXIC — Severe</div>
+            This plant is highly toxic to humans and pets if ingested. Wear gloves when pruning. Keep away from children and animals.
+          </div>
+        </div>
+      </div>
+    `;
+  } else if (plant.toxicity === 'mild' || plant.toxicity === 'moderate') {
+    toxicHTML = `
+      <div class="detail-card" style="padding:0; box-shadow:none; background:transparent;">
+        <div class="toxic-warning mild">
+          <span class="warn-icon">⚡</span>
+          <div class="warn-text">
+            <div class="warn-title">${plant.toxicityLabel}</div>
+            May cause mild stomach upset or skin irritation. Exercise caution around pets and children.
+          </div>
+        </div>
+      </div>
+    `;
+  } else {
+    toxicHTML = `
+      <div class="detail-card">
+        <div class="detail-card-label">Toxicity</div>
+        <div class="icon-text">
+          <span style="font-size:1.3rem;">✅</span>
+          <span style="font-size:0.88rem; font-weight:600;">${plant.toxicityLabel}</span>
+        </div>
+      </div>
+    `;
+  }
+  content.innerHTML += toxicHTML;
+
+  // Maintenance
+  const maintClass = plant.maintenance === 'low' ? 'maint-low' : plant.maintenance === 'medium' ? 'maint-medium' : 'maint-high';
+  content.innerHTML += `
+    <div class="detail-card">
+      <div class="detail-card-label">Maintenance Requirements</div>
+      <span class="maint-badge ${maintClass}">${capitalize(plant.maintenance)} Maintenance</span>
+      <div class="maint-desc">${plant.maintDesc}</div>
+    </div>
+  `;
+
+  // Mature Size
+  content.innerHTML += `
+    <div class="detail-card">
+      <div class="detail-card-label">Mature Size</div>
+      <div class="size-display">
+        <div class="size-item">
+          <div class="size-value">${plant.heightFt} ft</div>
+          <div class="size-label">Height (${plant.heightCm} cm)</div>
+        </div>
+        <div class="size-item">
+          <div class="size-value">${plant.widthFt} ft</div>
+          <div class="size-label">Width (${plant.widthCm} cm)</div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  // Project Goals Fit
+  content.innerHTML += `
+    <div class="detail-card">
+      <div class="detail-card-label">Project Goals Fit</div>
+      <div class="badge-row">
+        ${plant.goals.map(g => `<span class="tag-badge goal">${capitalize(g)} Garden</span>`).join('')}
+      </div>
+    </div>
+  `;
+
+  navigateTo('detail');
+}
+
+// ============================================================
+// INIT
+// ============================================================
+// Pre-filter plants on load so results screen isn't empty
+filteredPlants = PLANTS.map(p => ({ ...p, matchScore: 75 }));
+</script>
+
+
+<!-- ===== FIREBASE AUTH GATE ===== -->
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyAfBFdLayUbrMQ-F255pkxrS5boxAzERmQ",
+  authDomain: "yard-planner-v2.firebaseapp.com",
+  projectId: "yard-planner-v2",
+  storageBucket: "yard-planner-v2.firebasestorage.app",
+  messagingSenderId: "1064605508605",
+  appId: "1:1064605508605:web:57aaa1d8f042987ffb6f94"
+};
+
+const AUTHORIZED_EMAILS = [
+  "Walkers721@gmail.com",
+  "chadillac23@gmail.com"
+];
+
+firebase.initializeApp(firebaseConfig);
+
+// Build the sign-in overlay
+const overlay = document.createElement('div');
+overlay.id = 'auth-overlay';
+overlay.style.cssText = `
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: linear-gradient(135deg, #1f3f2a 0%, #2d5a3d 60%, #4a8c5c 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 99999;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  padding: 20px;
+  text-align: center;
+`;
+overlay.innerHTML = `
+  <div style="max-width: 340px; width: 100%;">
+    <div style="font-size: 3rem; margin-bottom: 12px;">🌱</div>
+    <h1 style="color: #f9fbf5; font-size: 1.5rem; margin-bottom: 8px; font-weight: 700;">Yard-to-Plants Planner</h1>
+    <p style="color: #c8e6c9; font-size: 0.85rem; margin-bottom: 28px; line-height: 1.5;">
+      Please sign in with your Google account to view this project.
+    </p>
+    <button id="google-signin-btn" style="
+      background: #ffffff;
+      color: #1a1a1a;
+      border: none;
+      border-radius: 12px;
+      padding: 14px 24px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      transition: transform 0.15s, box-shadow 0.15s;
+      margin: 0 auto;
+    ">
+      <svg width="20" height="20" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+      Sign in with Google
+    </button>
+    <div id="auth-error" style="color: #ffcccc; font-size: 0.8rem; margin-top: 16px; min-height: 20px;"></div>
+    <p style="color: #a5d6a7; font-size: 0.72rem; margin-top: 24px; opacity: 0.7;">
+      Authorized access only. If you believe you should have access, please contact Chad Leonard.
+    </p>
+  </div>
+`;
+document.body.appendChild(overlay);
+
+const style = document.createElement('style');
+style.textContent = `
+  body.firebase-authed #auth-overlay { display: none !important; }
+  #google-signin-btn:hover { transform: scale(1.03); box-shadow: 0 6px 16px rgba(0,0,0,0.2); }
+  #google-signin-btn:active { transform: scale(0.98); }
+`;
+document.head.appendChild(style);
+
+// Use signInWithRedirect — avoids third-party cookie blocking
+document.getElementById('google-signin-btn').addEventListener('click', function() {
+  const provider = new firebase.auth.GoogleAuthProvider();
+  provider.setCustomParameters({ prompt: 'select_account' });
+  
+  const btn = document.getElementById('google-signin-btn');
+  const errEl = document.getElementById('auth-error');
+  btn.textContent = 'Redirecting to Google...';
+  btn.style.opacity = '0.7';
+  btn.disabled = true;
+  errEl.textContent = '';
+  
+  console.log('[Firebase] Attempting signInWithRedirect...');
+  console.log('[Firebase] Current origin:', window.location.origin);
+  console.log('[Firebase] authDomain:', firebaseConfig.authDomain);
+  
+  firebase.auth().signInWithRedirect(provider).catch(function(error) {
+    console.error('[Firebase] signInWithRedirect error:', error.code, error.message);
+    errEl.textContent = 'Error: ' + error.message + ' (code: ' + error.code + ')';
+    btn.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg> Sign in with Google';
+    btn.style.opacity = '1';
+    btn.disabled = false;
+  });
+});
+
+// Handle redirect result on page load (after Google redirects back)
+firebase.auth().getRedirectResult().then(function(result) {
+  console.log('[Firebase] getRedirectResult: success', result);
+  if (result && result.user) {
+    console.log('[Firebase] Redirect user:', result.user.email);
+  }
+  // Redirect result is handled by onAuthStateChanged below
+}).catch(function(error) {
+  const errEl = document.getElementById('auth-error');
+  const btn = document.getElementById('google-signin-btn');
+  btn.textContent = '';
+  btn.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg> Sign in with Google';
+  btn.style.opacity = '1';
+  btn.disabled = false;
+  
+  if (error.code === 'auth/unauthorized-domain') {
+    errEl.textContent = 'This domain is not authorized in Firebase. Contact Chad to add it.';
+  } else if (error.code === 'auth/operation-not-supported-in-this-environment') {
+    errEl.textContent = 'Sign-in not available here. Try opening this link in a regular browser tab.';
+  } else {
+    errEl.textContent = 'Sign-in error: ' + error.message;
+  }
+  console.error('Firebase redirect error:', error);
+});
+
+// Auth state observer — this fires on initial load AND after redirect
+firebase.auth().onAuthStateChanged(function(user) {
+  console.log('[Firebase] onAuthStateChanged:', user ? user.email : 'null');
+  if (user) {
+    const email = user.email;
+    if (AUTHORIZED_EMAILS.includes(email)) {
+      document.body.classList.add('firebase-authed');
+      console.log('Access granted: ' + email);
+    } else {
+      firebase.auth().signOut().then(function() {
+        const errEl = document.getElementById('auth-error');
+        errEl.textContent = 'Access denied. ' + email + ' is not authorized for this project.';
+        const btn = document.getElementById('google-signin-btn');
+        btn.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg> Sign in with Google';
+        btn.style.opacity = '1';
+        btn.disabled = false;
+      });
+    }
+  } else {
+    document.body.classList.remove('firebase-authed');
+    const btn = document.getElementById('google-signin-btn');
+    if (btn) {
+      btn.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg> Sign in with Google';
+      btn.style.opacity = '1';
+      btn.disabled = false;
+    }
+  }
+});
+</script>
+<!-- ===== END FIREBASE AUTH GATE ===== -->
+
+</body>
+</html>
