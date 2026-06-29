@@ -2,18 +2,17 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <title>Veda & Juniper's Kitchen</title>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
-body {
+html, body {
+  width: 100%; height: 100%; overflow: hidden;
   font-family: -apple-system, 'Segoe UI', system-ui, sans-serif;
-  background: #2c1810;
-  color: #fff;
-  overflow: hidden;
-  user-select: none;
-  -webkit-user-select: none;
+  user-select: none; -webkit-user-select: none;
+  touch-action: none;
 }
+body { background: #1a1a2e; color: #fff; }
 
 /* ─── Screens ─── */
 .screen { display: none; width: 100vw; height: 100vh; }
@@ -21,245 +20,305 @@ body {
 
 /* ─── Character Select ─── */
 #charSelect {
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 40px;
+  flex-direction: column; align-items: center; justify-content: center;
+  gap: 30px;
   background: linear-gradient(180deg, #4a2c1a 0%, #2c1810 100%);
 }
 #charSelect h1 {
-  font-size: clamp(1.6rem, 5vw, 2.8rem);
-  color: #ffd700;
-  text-shadow: 0 0 20px rgba(255,215,0,0.4);
+  font-size: clamp(1.4rem, 4vw, 2.4rem);
+  color: #ffd700; text-shadow: 0 0 20px rgba(255,215,0,0.4);
 }
-#charSelect .subtitle { font-size: 1.1rem; color: #ccc; }
-.char-cards { display: flex; gap: 40px; flex-wrap: wrap; justify-content: center; }
+#charSelect .subtitle { font-size: 1rem; color: #ccc; }
+.char-cards { display: flex; gap: 30px; flex-wrap: wrap; justify-content: center; }
 .char-card {
-  background: #16213e;
-  border-radius: 20px;
-  padding: 30px 40px;
-  cursor: pointer;
-  transition: transform 0.2s, box-shadow 0.2s;
-  text-align: center;
-  border: 3px solid transparent;
+  background: #16213e; border-radius: 20px; padding: 24px 32px;
+  cursor: pointer; transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+  text-align: center; border: 3px solid transparent;
 }
-.char-card:hover { transform: scale(1.05); box-shadow: 0 0 30px rgba(255,215,0,0.3); border-color: #ffd700; }
-.char-card .char-avatar { font-size: 5rem; margin-bottom: 12px; }
-.char-card .char-name { font-size: 1.4rem; font-weight: 700; color: #ffd700; }
+.char-card:hover, .char-card:active {
+  transform: scale(1.05); box-shadow: 0 0 30px rgba(255,215,0,0.3);
+  border-color: #ffd700;
+}
+.char-card .char-svg-wrap { margin-bottom: 10px; }
+.char-card .char-name { font-size: 1.3rem; font-weight: 700; color: #ffd700; }
 
-/* ─── CSS Character Avatars ─── */
-.css-char {
-  width: 60px; height: 90px; position: relative;
-  transition: left 1.5s ease-in-out, top 1.5s ease-in-out;
-}
-.css-char .head {
-  width: 36px; height: 36px; border-radius: 50%;
-  position: absolute; top: 0; left: 12px; z-index: 2;
-}
-.css-char .hair {
-  width: 42px; height: 28px; border-radius: 50% 50% 30% 30%;
-  position: absolute; top: -4px; left: 9px; z-index: 3;
-}
-.css-char .body {
-  width: 40px; height: 50px; border-radius: 12px 12px 8px 8px;
-  position: absolute; top: 32px; left: 10px; z-index: 1;
-}
-.css-char .legs { position: absolute; top: 78px; left: 16px; width: 28px; height: 12px; }
-.css-char .leg {
-  width: 10px; height: 12px; border-radius: 0 0 4px 4px;
-  display: inline-block; margin-right: 4px;
-}
-.veda .head { background: #f5c89; }
-.veda .hair { background: #6b3410; }
-.veda .body { background: #e84545; }
-.veda .legs .leg { background: #2a1a0a; }
-.juniper .head { background: #f5c89; }
-.juniper .hair { background: #f0d050; }
-.juniper .body { background: #5b8def; }
-.juniper .legs .leg { background: #2a1a0a; }
-
-/* Walking animation */
-.css-char.walking .leg { animation: walkLeg 0.4s infinite alternate; }
-.css-char.walking .leg:last-child { animation-delay: 0.2s; }
-@keyframes walkLeg { from { transform: rotate(-15deg); } to { transform: rotate(15deg); } }
-
-/* ─── Game Screen ─── */
+/* ─── Game Screen (Horizontal Layout) ─── */
 #gameScreen { flex-direction: row; }
 
 /* Left Navigation */
 .nav-panel {
-  width: 300px; min-width: 300px;
-  background: #1a1a2e;
-  border-right: 2px solid #333;
-  display: flex; flex-direction: column;
-  overflow-y: auto;
+  width: 280px; min-width: 280px; height: 100vh;
+  background: #1a1a2e; border-right: 2px solid #333;
+  display: flex; flex-direction: column; overflow: hidden;
 }
 .nav-header {
-  padding: 16px;
-  background: #16213e;
+  padding: 12px 16px; background: #16213e;
   border-bottom: 2px solid #333;
-  display: flex; align-items: center; gap: 12px;
+  display: flex; align-items: center; gap: 10px; min-height: 56px;
 }
 .nav-back {
   background: #333; border: none; color: #fff;
   width: 36px; height: 36px; border-radius: 8px;
   font-size: 1.2rem; cursor: pointer;
   display: none; align-items: center; justify-content: center;
-  transition: background 0.15s;
+  transition: background 0.15s; flex-shrink: 0;
 }
 .nav-back:hover { background: #555; }
 .nav-back.show { display: flex; }
-.nav-title { font-size: 1.1rem; font-weight: 700; color: #ffd700; }
+.nav-title { font-size: 1rem; font-weight: 700; color: #ffd700; }
+.nav-scroll { flex: 1; overflow-y: auto; padding: 10px; }
 
-.food-list { padding: 12px; display: flex; flex-direction: column; gap: 10px; }
+.food-list { display: flex; flex-direction: column; gap: 8px; }
 .food-card {
-  display: flex; align-items: center; gap: 14px;
-  background: #16213e; border-radius: 12px; padding: 14px;
-  cursor: pointer; transition: transform 0.15s, background 0.15s;
+  display: flex; align-items: center; gap: 12px;
+  background: #16213e; border-radius: 12px; padding: 12px;
+  cursor: pointer; transition: transform 0.12s, background 0.12s;
   border: 2px solid transparent;
 }
-.food-card:hover { transform: translateX(4px); background: #1a2744; border-color: #ffd700; }
-.food-card .food-icon { font-size: 2.5rem; }
-.food-card .food-name { font-size: 1rem; font-weight: 600; }
+.food-card:hover, .food-card:active {
+  transform: translateX(4px); background: #1a2744; border-color: #ffd700;
+}
+.food-card .food-icon { font-size: 2.2rem; line-height: 1; }
+.food-card .food-name { font-size: 0.95rem; font-weight: 600; }
 
-.ingredient-list { padding: 12px; display: none; flex-direction: column; gap: 10px; }
+.ingredient-list { display: none; flex-direction: column; gap: 8px; }
 .ingredient-list.show { display: flex; }
 .ingredient-item {
-  display: flex; align-items: center; gap: 12px;
-  background: #16213e; border-radius: 10px; padding: 12px;
-  cursor: grab; transition: transform 0.15s, box-shadow 0.15s;
+  display: flex; align-items: center; gap: 10px;
+  background: #16213e; border-radius: 10px; padding: 10px;
+  cursor: grab; transition: transform 0.12s, box-shadow 0.12s, opacity 0.2s;
   border: 2px solid #333;
 }
-.ingredient-item:hover { transform: scale(1.02); box-shadow: 0 0 12px rgba(255,215,0,0.2); border-color: #ffd700; }
-.ingredient-item.dragging { opacity: 0.5; }
-.ingredient-item.used { opacity: 0.3; pointer-events: none; }
-.ingredient-item .ing-icon { font-size: 2rem; }
-.ingredient-item .ing-name { font-size: 0.95rem; }
+.ingredient-item:hover {
+  transform: scale(1.03); box-shadow: 0 0 12px rgba(255,215,0,0.2);
+  border-color: #ffd700;
+}
+.ingredient-item.dragging { opacity: 0.4; }
+.ingredient-item.used { opacity: 0.25; pointer-events: none; }
+.ingredient-item .ing-svg { width: 36px; height: 36px; flex-shrink: 0; }
+.ingredient-item .ing-name { font-size: 0.9rem; }
+.ingredient-item .ing-check { margin-left: auto; color: #4caf50; font-size: 1.1rem; display: none; }
+.ingredient-item.used .ing-check { display: block; }
 
 /* ─── Kitchen Area ─── */
 .kitchen {
-  flex: 1; position: relative;
-  background: linear-gradient(180deg, #5a3a2a 0%, #3a241a 70%, #2c1810 100%);
-  overflow: hidden;
-}
-.kitchen-floor {
-  position: absolute; bottom: 0; left: 0; right: 0; height: 35%;
-  background: repeating-linear-gradient(90deg, #6b4a35 0px, #6b4a35 60px, #5a3a2a 60px, #5a3a2a 120px);
-  border-top: 3px solid #4a2a1a;
-}
-.counter {
-  position: absolute;
-  background: linear-gradient(180deg, #8b6b4a 0%, #6b4a35 100%);
-  border-radius: 8px 8px 0 0;
-  box-shadow: 0 -2px 8px rgba(0,0,0,0.3);
+  flex: 1; position: relative; overflow: hidden;
+  background: linear-gradient(180deg, #6b5b4a 0%, #5a4a3a 40%, #4a3a2a 70%, #3a2a1a 100%);
 }
 
-/* Table */
-.prep-table {
-  position: absolute; bottom: 15%; left: 50%; transform: translateX(-50%);
-  width: 280px; height: 100px;
-  background: linear-gradient(180deg, #c4956a 0%, #8b6b4a 100%);
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.4);
-  display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: center;
-  padding: 12px;
+/* Wallpaper pattern */
+.kitchen::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 60%;
+  background:
+    repeating-linear-gradient(0deg, transparent 0px, transparent 40px, rgba(255,255,255,0.03) 40px, rgba(255,255,255,0.03) 80px),
+    repeating-linear-gradient(90deg, transparent 0px, transparent 40px, rgba(255,255,255,0.03) 40px, rgba(255,255,255,0.03) 80px);
+  pointer-events: none;
 }
-.prep-table.drop-active { box-shadow: 0 0 20px rgba(255,215,0,0.5); }
-.table-label {
-  position: absolute; top: -28px; left: 50%; transform: translateX(-50%);
-  font-size: 0.75rem; color: #aaa; white-space: nowrap;
+
+/* Floor */
+.kitchen-floor {
+  position: absolute; bottom: 0; left: 0; right: 0; height: 30%;
+  background:
+    repeating-linear-gradient(90deg,
+      #8b6b4a 0px, #8b6b4a 50px, #7a5b3a 50px, #7a5b3a 100px);
+  border-top: 3px solid #5a3a2a;
+}
+
+/* Counter / counters */
+.counter-back {
+  position: absolute; bottom: 28%; left: 0; right: 0; height: 50px;
+  background: linear-gradient(180deg, #9b7b5a 0%, #7b5b3a 100%);
+  border-top: 3px solid #6b4b2a;
+  box-shadow: 0 -2px 8px rgba(0,0,0,0.2);
+}
+
+/* Prep Table */
+.prep-table {
+  position: absolute; bottom: 18%; left: 30%; transform: translateX(-50%);
+  width: 220px; height: 80px;
+  background: linear-gradient(180deg, #d4a574 0%, #a07a54 100%);
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+  display: flex; flex-wrap: wrap; gap: 6px; align-items: center; justify-content: center;
+  padding: 10px;
+  z-index: 5;
+}
+.prep-table.drop-active {
+  box-shadow: 0 0 20px rgba(255,215,0,0.5), 0 4px 12px rgba(0,0,0,0.4);
+}
+.prep-table .table-label {
+  position: absolute; top: -22px; left: 50%; transform: translateX(-50%);
+  font-size: 0.7rem; color: #aaa; white-space: nowrap;
+}
+.table-ingredient {
+  width: 32px; height: 32px;
+  animation: popIn 0.3s;
 }
 
 /* Oven */
 .oven {
-  position: absolute; bottom: 15%; right: 5%;
-  width: 120px; height: 160px;
-  background: linear-gradient(180deg, #555 0%, #333 100%);
-  border-radius: 12px;
+  position: absolute; bottom: 18%; right: 6%;
+  width: 110px; height: 150px;
+  background: linear-gradient(180deg, #666 0%, #444 100%);
+  border-radius: 10px;
   box-shadow: 0 4px 12px rgba(0,0,0,0.5);
   cursor: pointer; display: flex; flex-direction: column; align-items: center;
-  padding: 12px; gap: 8px;
-  border: 3px solid #444;
-  transition: border-color 0.2s;
+  padding: 10px; gap: 6px; z-index: 5;
+  border: 3px solid #555;
+  transition: border-color 0.2s, box-shadow 0.2s;
 }
 .oven:hover { border-color: #ffd700; }
-.oven.oven-active { border-color: #ff6b35; animation: ovenGlow 1s infinite alternate; }
-@keyframes ovenGlow { from { box-shadow: 0 0 8px rgba(255,107,53,0.3); } to { box-shadow: 0 0 24px rgba(255,107,53,0.6); } }
+.oven.oven-active {
+  border-color: #ff6b35;
+  animation: ovenGlow 0.8s infinite alternate;
+}
+@keyframes ovenGlow {
+  from { box-shadow: 0 0 8px rgba(255,107,53,0.3), 0 4px 12px rgba(0,0,0,0.5); }
+  to { box-shadow: 0 0 28px rgba(255,107,53,0.7), 0 4px 12px rgba(0,0,0,0.5); }
+}
 .oven-window {
-  width: 80px; height: 60px; background: #1a1a1a;
-  border-radius: 8px; border: 2px solid #666;
+  width: 70px; height: 50px; background: #1a1a1a;
+  border-radius: 6px; border: 2px solid #777;
   display: flex; align-items: center; justify-content: center;
-  font-size: 2rem;
+  overflow: hidden;
 }
-.oven-label { font-size: 0.8rem; color: #aaa; }
+.oven-label { font-size: 0.75rem; color: #aaa; }
 
-/* Character in kitchen */
+/* Character */
 .kitchen-char {
-  position: absolute; bottom: 15%; left: 20%;
+  position: absolute; bottom: 18%; left: 15%;
   z-index: 10;
+  transition: left 1.2s ease-in-out, bottom 1.2s ease-in-out;
+  width: 70px; height: 110px;
 }
+.kitchen-char svg { width: 100%; height: 100%; overflow: visible; }
 
-/* Dragged ingredient */
-.dragging-ghost {
-  position: fixed; pointer-events: none; z-index: 9999;
-  font-size: 2rem; opacity: 0.8;
-}
+/* Character animation states */
+.char-walk #charLegs .leg-left { animation: walkLeft 0.35s infinite alternate; }
+.char-walk #charLegs .leg-right { animation: walkRight 0.35s infinite alternate; }
+.char-walk #charArms .arm-left { animation: armSwingLeft 0.35s infinite alternate; }
+.char-walk #charArms .arm-right { animation: armSwingRight 0.35s infinite alternate; }
+@keyframes walkLeft { from { transform: rotate(-15deg); } to { transform: rotate(20deg); } }
+@keyframes walkRight { from { transform: rotate(20deg); } to { transform: rotate(-15deg); } }
+@keyframes armSwingLeft { from { transform: rotate(10deg); } to { transform: rotate(-15deg); } }
+@keyframes armSwingRight { from { transform: rotate(-15deg); } to { transform: rotate(10deg); } }
 
-/* Prepared dish on table */
-.prepared-dish {
-  font-size: 3rem; animation: popIn 0.4s;
+/* Preparing animation */
+.char-prep #charArms .arm-left { animation: prepLeft 0.4s infinite alternate; }
+.char-prep #charArms .arm-right { animation: prepRight 0.4s infinite alternate; }
+@keyframes prepLeft { from { transform: rotate(-20deg); } to { transform: rotate(10deg); } }
+@keyframes prepRight { from { transform: rotate(10deg); } to { transform: rotate(-20deg); } }
+
+/* Carrying dish */
+.char-carry #carryItem { display: block; }
+#carryItem { display: none; }
+
+/* Status bar */
+.status-bar {
+  position: absolute; top: 10px; right: 12px;
+  background: rgba(0,0,0,0.6); border-radius: 10px; padding: 6px 14px;
+  font-size: 0.82rem; color: #ccc; z-index: 50;
 }
-@keyframes popIn { from { transform: scale(0); } to { transform: scale(1); } }
+.status-bar .chef-name { color: #ffd700; font-weight: 700; }
+
+/* Action prompt */
+.action-prompt {
+  position: absolute; top: 10px; left: 50%; transform: translateX(-50%);
+  background: rgba(0,0,0,0.75); border-radius: 12px; padding: 8px 18px;
+  font-size: 0.88rem; color: #ffd700; z-index: 50;
+  display: none; max-width: 60%; text-align: center;
+}
+.action-prompt.show { display: block; }
 
 /* Timer popup */
 .timer-popup {
-  position: absolute; top: 30%; left: 50%; transform: translateX(-50%);
-  background: rgba(0,0,0,0.85); border-radius: 20px; padding: 24px 48px;
+  position: absolute; top: 25%; left: 50%; transform: translate(-50%, -50%);
+  background: rgba(0,0,0,0.88); border-radius: 20px; padding: 20px 40px;
   text-align: center; z-index: 100; display: none;
   border: 3px solid #ffd700;
 }
 .timer-popup.show { display: block; animation: popIn 0.3s; }
-.timer-popup .timer-number { font-size: 3rem; font-weight: 700; color: #ffd700; }
-.timer-popup .timer-label { font-size: 0.9rem; color: #ccc; margin-top: 4px; }
+.timer-popup .timer-number { font-size: 2.8rem; font-weight: 700; color: #ffd700; }
+.timer-popup .timer-label { font-size: 0.85rem; color: #ccc; margin-top: 4px; }
 
-/* Action prompt */
-.action-prompt {
-  position: absolute; top: 16px; left: 50%; transform: translateX(-50%);
-  background: rgba(0,0,0,0.7); border-radius: 12px; padding: 8px 20px;
-  font-size: 0.9rem; color: #ffd700; z-index: 50;
-  display: none;
+/* Cook button */
+.cook-btn {
+  position: absolute; bottom: 20%; right: 6%;
+  background: #ff6b35; color: #fff; border: none;
+  padding: 10px 18px; border-radius: 8px; font-size: 0.9rem;
+  cursor: pointer; z-index: 20; display: none;
+  font-weight: 700; box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+  animation: popIn 0.3s;
 }
-.action-prompt.show { display: block; }
+.cook-btn.show { display: block; }
+.cook-btn:hover { background: #ff8555; }
 
-/* Status bar */
-.status-bar {
-  position: absolute; top: 16px; right: 16px;
-  background: rgba(0,0,0,0.6); border-radius: 10px; padding: 8px 16px;
-  font-size: 0.85rem; color: #ccc; z-index: 50;
-}
-.status-bar .char-label { color: #ffd700; font-weight: 700; }
-
-/* Completed dish indicator */
+/* Completed dish */
 .dish-complete {
-  position: absolute; bottom: 15%; left: 50%; transform: translateX(-50%);
-  z-index: 20; font-size: 4rem; display: none;
+  position: absolute; bottom: 20%; left: 30%; transform: translateX(-50%);
+  z-index: 20; display: none;
   animation: popIn 0.5s;
 }
 .dish-complete.show { display: block; }
 
-/* Cook button */
-.cook-btn {
-  position: absolute; bottom: 18%; right: 5%;
-  background: #ff6b35; color: #fff; border: none;
-  padding: 10px 20px; border-radius: 8px; font-size: 0.95rem;
-  cursor: pointer; z-index: 20; display: none;
-  font-weight: 700; box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+/* Decorative kitchen items */
+.window-deco {
+  position: absolute; top: 8%; left: 15%;
+  width: 100px; height: 80px;
+  background: linear-gradient(180deg, #87CEEB 0%, #98D8E8 100%);
+  border: 4px solid #8b6b4a; border-radius: 8px;
+  z-index: 1;
 }
-.cook-btn.show { display: block; animation: popIn 0.3s; }
-.cook-btn:hover { background: #ff8555; }
+.window-deco::after {
+  content: ''; position: absolute; top: 50%; left: 0; right: 0; height: 3px;
+  background: #8b6b4a; transform: translateY(-50%);
+}
+.window-deco::before {
+  content: ''; position: absolute; top: 0; bottom: 0; left: 50%; width: 3px;
+  background: #8b6b4a; transform: translateX(-50%);
+}
+
+.cabinet-deco {
+  position: absolute; top: 5%; right: 3%;
+  width: 80px; height: 60px;
+  background: linear-gradient(180deg, #7b5b3a 0%, #6b4b2a 100%);
+  border-radius: 6px; z-index: 1;
+  border: 2px solid #5b3b1a;
+}
+
+@keyframes popIn { from { transform: scale(0); } to { transform: scale(1); } }
+.dish-complete { transform-origin: center; }
+
+/* Drag ghost */
+.drag-ghost {
+  position: fixed; pointer-events: none; z-index: 9999;
+  opacity: 0.8; width: 40px; height: 40px;
+}
+
+/* Mobile rotate hint */
+.rotate-hint {
+  display: none;
+  position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+  background: #1a1a2e; z-index: 9999;
+  align-items: center; justify-content: center; flex-direction: column;
+  gap: 20px; text-align: center; padding: 40px;
+}
+.rotate-hint .rotate-icon { font-size: 4rem; animation: rotateAnim 1.5s infinite; }
+.rotate-hint p { font-size: 1.1rem; color: #ccc; }
+@keyframes rotateAnim { from { transform: rotate(0deg); } to { transform: rotate(90deg); } }
+
+@media (max-width: 600px) and (orientation: portrait) {
+  .rotate-hint { display: flex; }
+}
 </style>
 </head>
 <body>
+
+<!-- Rotate hint for mobile -->
+<div class="rotate-hint">
+  <div class="rotate-icon">📱</div>
+  <p>Rotate your phone to play!<br>This game is best in landscape mode.</p>
+</div>
 
 <!-- ═══ Character Select Screen ═══ -->
 <div id="charSelect" class="screen active">
@@ -267,24 +326,80 @@ body {
   <p class="subtitle">Pick your chef!</p>
   <div class="char-cards">
     <div class="char-card" onclick="selectCharacter('veda')">
-      <div class="char-avatar">
-        <div class="css-char veda" style="position:relative;left:0;top:0;transform:scale(1.5);">
-          <div class="hair"></div>
-          <div class="head"></div>
-          <div class="body"></div>
-          <div class="legs"><div class="leg"></div><div class="leg"></div></div>
-        </div>
+      <div class="char-svg-wrap">
+        <svg width="80" height="120" viewBox="0 0 80 120">
+          <!-- Veda: brown hair, red dress -->
+          <ellipse cx="40" cy="108" rx="22" ry="5" fill="rgba(0,0,0,0.2)"/>
+          <!-- Legs -->
+          <rect x="30" y="88" width="8" height="22" rx="3" fill="#5a3a2a"/>
+          <rect x="42" y="88" width="8" height="22" rx="3" fill="#5a3a2a"/>
+          <!-- Shoes -->
+          <ellipse cx="34" cy="110" rx="7" ry="4" fill="#2a1a0a"/>
+          <ellipse cx="46" cy="110" rx="7" ry="4" fill="#2a1a0a"/>
+          <!-- Dress/body -->
+          <path d="M25 50 Q25 45 30 42 L50 42 Q55 45 55 50 L58 90 L22 90 Z" fill="#e84545"/>
+          <path d="M30 42 L40 48 L50 42" stroke="#c83535" stroke-width="2" fill="none"/>
+          <!-- Arms -->
+          <rect x="18" y="46" width="8" height="28" rx="4" fill="#f5c89" transform="rotate(8 22 60)"/>
+          <rect x="54" y="46" width="8" height="28" rx="4" fill="#f5c89" transform="rotate(-8 58 60)"/>
+          <!-- Head -->
+          <circle cx="40" cy="30" r="18" fill="#f5c89"/>
+          <!-- Hair (brown) -->
+          <path d="M22 25 Q22 12 40 10 Q58 12 58 25 Q58 18 52 16 Q48 12 40 12 Q32 12 28 16 Q22 18 22 25Z" fill="#6b3410"/>
+          <path d="M22 25 Q20 30 22 35 L24 35 Q23 30 24 25Z" fill="#6b3410"/>
+          <path d="M58 25 Q60 30 58 35 L56 35 Q57 30 56 25Z" fill="#6b3410"/>
+          <path d="M28 14 Q35 8 40 10 Q45 8 52 14 Q48 10 40 10 Q32 10 28 14Z" fill="#5b2900"/>
+          <!-- Eyes -->
+          <circle cx="33" cy="30" r="3" fill="#fff"/>
+          <circle cx="47" cy="30" r="3" fill="#fff"/>
+          <circle cx="33" cy="31" r="2" fill="#2a1a4a"/>
+          <circle cx="47" cy="31" r="2" fill="#2a1a4a"/>
+          <circle cx="33.5" cy="30.5" r="0.8" fill="#fff"/>
+          <circle cx="47.5" cy="30.5" r="0.8" fill="#fff"/>
+          <!-- Cheeks -->
+          <circle cx="30" cy="36" r="3" fill="#f5b5b5" opacity="0.6"/>
+          <circle cx="50" cy="36" r="3" fill="#f5b5b5" opacity="0.6"/>
+          <!-- Mouth -->
+          <path d="M36 38 Q40 42 44 38" stroke="#c83535" stroke-width="2" fill="none" stroke-linecap="round"/>
+          <!-- Apron -->
+          <path d="M33 50 L47 50 L49 88 L31 88 Z" fill="#fff" opacity="0.85"/>
+          <path d="M35 48 Q40 46 45 48" stroke="#fff" stroke-width="2" fill="none"/>
+        </svg>
       </div>
       <div class="char-name">Veda</div>
     </div>
+
     <div class="char-card" onclick="selectCharacter('juniper')">
-      <div class="char-avatar">
-        <div class="css-char juniper" style="position:relative;left:0;top:0;transform:scale(1.5);">
-          <div class="hair"></div>
-          <div class="head"></div>
-          <div class="body"></div>
-          <div class="legs"><div class="leg"></div><div class="leg"></div></div>
-        </div>
+      <div class="char-svg-wrap">
+        <svg width="80" height="120" viewBox="0 0 80 120">
+          <!-- Juniper: blonde hair, blue dress -->
+          <ellipse cx="40" cy="108" rx="22" ry="5" fill="rgba(0,0,0,0.2)"/>
+          <rect x="30" y="88" width="8" height="22" rx="3" fill="#5a3a2a"/>
+          <rect x="42" y="88" width="8" height="22" rx="3" fill="#5a3a2a"/>
+          <ellipse cx="34" cy="110" rx="7" ry="4" fill="#2a1a0a"/>
+          <ellipse cx="46" cy="110" rx="7" ry="4" fill="#2a1a0a"/>
+          <path d="M25 50 Q25 45 30 42 L50 42 Q55 45 55 50 L58 90 L22 90 Z" fill="#5b8def"/>
+          <path d="M30 42 L40 48 L50 42" stroke="#4b7ddf" stroke-width="2" fill="none"/>
+          <rect x="18" y="46" width="8" height="28" rx="4" fill="#f5c89" transform="rotate(8 22 60)"/>
+          <rect x="54" y="46" width="8" height="28" rx="4" fill="#f5c89" transform="rotate(-8 58 60)"/>
+          <circle cx="40" cy="30" r="18" fill="#f5c89"/>
+          <!-- Hair (blonde, longer) -->
+          <path d="M20 25 Q20 10 40 8 Q60 10 60 25 Q62 35 58 42 L54 42 Q56 32 55 25 Q55 18 50 15 Q45 10 40 10 Q35 10 30 15 Q25 18 25 25 Q24 32 26 42 L22 42 Q18 35 20 25Z" fill="#f0d050"/>
+          <path d="M20 25 Q18 15 25 10 Q35 5 40 8 Q45 5 55 10 Q62 15 60 25 Q58 20 55 18 Q48 12 40 12 Q32 12 25 18 Q22 20 20 25Z" fill="#ffe060"/>
+          <!-- Eyes -->
+          <circle cx="33" cy="30" r="3" fill="#fff"/>
+          <circle cx="47" cy="30" r="3" fill="#fff"/>
+          <circle cx="33" cy="31" r="2" fill="#2a4a1a"/>
+          <circle cx="47" cy="31" r="2" fill="#2a4a1a"/>
+          <circle cx="33.5" cy="30.5" r="0.8" fill="#fff"/>
+          <circle cx="47.5" cy="30.5" r="0.8" fill="#fff"/>
+          <circle cx="30" cy="36" r="3" fill="#f5b5b5" opacity="0.6"/>
+          <circle cx="50" cy="36" r="3" fill="#f5b5b5" opacity="0.6"/>
+          <path d="M36 38 Q40 42 44 38" stroke="#c83535" stroke-width="2" fill="none" stroke-linecap="round"/>
+          <!-- Apron -->
+          <path d="M33 50 L47 50 L49 88 L31 88 Z" fill="#fff" opacity="0.85"/>
+          <path d="M35 48 Q40 46 45 48" stroke="#fff" stroke-width="2" fill="none"/>
+        </svg>
       </div>
       <div class="char-name">Juniper</div>
     </div>
@@ -299,36 +414,42 @@ body {
       <button class="nav-back" id="navBack" onclick="showFoodList()">←</button>
       <span class="nav-title" id="navTitle">Choose a Dish</span>
     </div>
-    <div class="food-list" id="foodList">
-      <div class="food-card" onclick="selectFood('cake')">
-        <div class="food-icon">🎂</div><div class="food-name">Cake</div>
+    <div class="nav-scroll">
+      <div class="food-list" id="foodList">
+        <div class="food-card" onclick="selectFood('cake')">
+          <div class="food-icon">🎂</div><div class="food-name">Cake</div>
+        </div>
+        <div class="food-card" onclick="selectFood('muffins')">
+          <div class="food-icon">🧁</div><div class="food-name">Muffins</div>
+        </div>
+        <div class="food-card" onclick="selectFood('cheeseburgers')">
+          <div class="food-icon">🍔</div><div class="food-name">Cheeseburgers</div>
+        </div>
+        <div class="food-card" onclick="selectFood('nuggets')">
+          <div class="food-icon">🍗</div><div class="food-name">Chicken Nuggets & Fries</div>
+        </div>
+        <div class="food-card" onclick="selectFood('salad')">
+          <div class="food-icon">🥗</div><div class="food-name">Salad</div>
+        </div>
+        <div class="food-card" onclick="selectFood('garlicbread')">
+          <div class="food-icon">🥖</div><div class="food-name">Garlic Bread</div>
+        </div>
+        <div class="food-card" onclick="selectFood('spaghetti')">
+          <div class="food-icon">🍝</div><div class="food-name">Spaghetti & Meatballs</div>
+        </div>
       </div>
-      <div class="food-card" onclick="selectFood('muffins')">
-        <div class="food-icon">🧁</div><div class="food-name">Muffins</div>
-      </div>
-      <div class="food-card" onclick="selectFood('cheeseburgers')">
-        <div class="food-icon">🍔</div><div class="food-name">Cheeseburgers</div>
-      </div>
-      <div class="food-card" onclick="selectFood('nuggets')">
-        <div class="food-icon">🍗</div><div class="food-name">Chicken Nuggets & Fries</div>
-      </div>
-      <div class="food-card" onclick="selectFood('salad')">
-        <div class="food-icon">🥗</div><div class="food-name">Salad</div>
-      </div>
-      <div class="food-card" onclick="selectFood('garlicbread')">
-        <div class="food-icon">🥖</div><div class="food-name">Garlic Bread</div>
-      </div>
-      <div class="food-card" onclick="selectFood('spaghetti')">
-        <div class="food-icon">🍝</div><div class="food-name">Spaghetti & Meatballs</div>
-      </div>
+      <div class="ingredient-list" id="ingredientList"></div>
     </div>
-    <div class="ingredient-list" id="ingredientList"></div>
   </div>
 
   <!-- Kitchen -->
   <div class="kitchen" id="kitchen">
     <div class="kitchen-floor"></div>
-    <div class="status-bar">Chef: <span class="char-label" id="charLabel">—</span></div>
+    <div class="counter-back"></div>
+    <div class="window-deco"></div>
+    <div class="cabinet-deco"></div>
+
+    <div class="status-bar">Chef: <span class="chef-name" id="charLabel">—</span></div>
     <div class="action-prompt" id="actionPrompt"></div>
 
     <!-- Prep Table -->
@@ -338,18 +459,56 @@ body {
 
     <!-- Oven -->
     <div class="oven" id="oven" onclick="clickOven()">
-      <div class="oven-window" id="ovenWindow">🔥</div>
+      <div class="oven-window" id="ovenWindow">
+        <svg width="40" height="30" viewBox="0 0 40 30">
+          <rect x="5" y="8" width="30" height="20" rx="3" fill="#ff6b35" opacity="0.3"/>
+          <path d="M10 20 Q15 15 20 18 Q25 12 30 20" stroke="#ff6b35" stroke-width="1.5" fill="none" opacity="0.5"/>
+        </svg>
+      </div>
       <div class="oven-label">Oven</div>
     </div>
 
     <!-- Character -->
     <div class="kitchen-char" id="kitchenChar">
-      <div class="css-char" id="charSprite">
-        <div class="hair"></div>
-        <div class="head"></div>
-        <div class="body"></div>
-        <div class="legs"><div class="leg"></div><div class="leg"></div></div>
-      </div>
+      <svg viewBox="0 0 80 120" id="charSVG">
+        <ellipse cx="40" cy="112" rx="22" ry="5" fill="rgba(0,0,0,0.2)"/>
+        <g id="charLegs">
+          <rect class="leg-left" x="30" y="88" width="8" height="22" rx="3" fill="#5a3a2a" style="transform-origin: 34px 88px;"/>
+          <rect class="leg-right" x="42" y="88" width="8" height="22" rx="3" fill="#5a3a2a" style="transform-origin: 46px 88px;"/>
+        </g>
+        <ellipse cx="34" cy="110" rx="7" ry="4" fill="#2a1a0a"/>
+        <ellipse cx="46" cy="110" rx="7" ry="4" fill="#2a1a0a"/>
+        <path id="charDress" d="M25 50 Q25 45 30 42 L50 42 Q55 45 55 50 L58 90 L22 90 Z" fill="#e84545"/>
+        <path d="M30 42 L40 48 L50 42" stroke="#c83535" stroke-width="2" fill="none"/>
+        <g id="charArms">
+          <rect class="arm-left" x="18" y="46" width="8" height="28" rx="4" fill="#f5c89" style="transform-origin: 22px 50px;"/>
+          <rect class="arm-right" x="54" y="46" width="8" height="28" rx="4" fill="#f5c89" style="transform-origin: 58px 50px;"/>
+        </g>
+        <!-- Carried item (hidden by default) -->
+        <g id="carryItem" transform="translate(28, 36)">
+          <rect x="0" y="0" width="24" height="16" rx="3" fill="#d4a574" stroke="#8b6b4a" stroke-width="1.5"/>
+        </g>
+        <circle id="charHead" cx="40" cy="30" r="18" fill="#f5c89"/>
+        <path id="charHair" d="M22 25 Q22 12 40 10 Q58 12 58 25 Q58 18 52 16 Q48 12 40 12 Q32 12 28 16 Q22 18 22 25Z" fill="#6b3410"/>
+        <path d="M22 25 Q20 30 22 35 L24 35 Q23 30 24 25Z" fill="#6b3410"/>
+        <path d="M58 25 Q60 30 58 35 L56 35 Q57 30 56 25Z" fill="#6b3410"/>
+        <path d="M28 14 Q35 8 40 10 Q45 8 52 14 Q48 10 40 10 Q32 10 28 14Z" fill="#5b2900"/>
+        <!-- Eyes -->
+        <circle cx="33" cy="30" r="3" fill="#fff"/>
+        <circle cx="47" cy="30" r="3" fill="#fff"/>
+        <circle id="charEyeL" cx="33" cy="31" r="2" fill="#2a1a4a"/>
+        <circle id="charEyeR" cx="47" cy="31" r="2" fill="#2a1a4a"/>
+        <circle cx="33.5" cy="30.5" r="0.8" fill="#fff"/>
+        <circle cx="47.5" cy="30.5" r="0.8" fill="#fff"/>
+        <!-- Cheeks -->
+        <circle cx="30" cy="36" r="3" fill="#f5b5b5" opacity="0.6"/>
+        <circle cx="50" cy="36" r="3" fill="#f5b5b5" opacity="0.6"/>
+        <!-- Mouth -->
+        <path id="charMouth" d="M36 38 Q40 42 44 38" stroke="#c83535" stroke-width="2" fill="none" stroke-linecap="round"/>
+        <!-- Apron -->
+        <path d="M33 50 L47 50 L49 88 L31 88 Z" fill="#fff" opacity="0.85"/>
+        <path d="M35 48 Q40 46 45 48" stroke="#fff" stroke-width="2" fill="none"/>
+      </svg>
     </div>
 
     <!-- Timer -->
@@ -371,86 +530,111 @@ body {
 let selectedChar = null;
 let selectedFood = null;
 let ingredientsOnTable = [];
-let currentStep = 'select'; // select, preparing, ready_to_cook, cooking, done
+let currentStep = 'select';
+let charBusy = false;
 
-// ─── Food Data ───
+// ─── Food Data with SVG ingredients ───
 const foods = {
   cake: {
-    name: 'Cake', icon: '🎂',
+    name: 'Cake', icon: '🎂', color: '#ff6b9d',
     ingredients: [
-      { icon: '🌾', name: 'Flour' },
-      { icon: '🥚', name: 'Eggs' },
-      { icon: '🥛', name: 'Milk' },
-      { icon: '🧈', name: 'Butter' },
-      { icon: '🍬', name: 'Sugar' },
+      { name: 'Flour', svg: '<circle cx="18" cy="18" r="14" fill="#f5e6c8" stroke="#d4b896" stroke-width="2"/><text x="18" y="22" text-anchor="middle" font-size="10">🌾</text>' },
+      { name: 'Eggs', svg: '<ellipse cx="18" cy="18" rx="10" ry="13" fill="#fff" stroke="#ddd" stroke-width="1.5"/><ellipse cx="15" cy="14" rx="4" ry="3" fill="#ffd060" opacity="0.5"/>' },
+      { name: 'Milk', svg: '<rect x="10" y="8" width="16" height="22" rx="2" fill="#fff" stroke="#ccc" stroke-width="1.5"/><rect x="10" y="8" width="16" height="6" fill="#4a90d9" rx="2"/><text x="18" y="22" text-anchor="middle" font-size="8" fill="#4a90d9">M</text>' },
+      { name: 'Butter', svg: '<rect x="8" y="12" width="20" height="12" rx="2" fill="#f9d75e" stroke="#e0c040" stroke-width="1.5"/><rect x="10" y="10" width="16" height="3" fill="#ffe070"/>' },
+      { name: 'Sugar', svg: '<rect x="8" y="10" width="20" height="16" rx="2" fill="#fff" stroke="#e8e8e8" stroke-width="1.5"/><circle cx="14" cy="18" r="1.5" fill="#ddd"/><circle cx="20" cy="20" r="1.5" fill="#ddd"/><circle cx="16" cy="22" r="1" fill="#ddd"/>' },
     ]
   },
   muffins: {
-    name: 'Muffins', icon: '🧁',
+    name: 'Muffins', icon: '🧁', color: '#d4a574',
     ingredients: [
-      { icon: '🌾', name: 'Flour' },
-      { icon: '🥚', name: 'Eggs' },
-      { icon: '🥛', name: 'Milk' },
-      { icon: '🫐', name: 'Berries' },
-      { icon: '🍬', name: 'Sugar' },
+      { name: 'Flour', svg: '<circle cx="18" cy="18" r="14" fill="#f5e6c8" stroke="#d4b896" stroke-width="2"/>' },
+      { name: 'Eggs', svg: '<ellipse cx="18" cy="18" rx="10" ry="13" fill="#fff" stroke="#ddd" stroke-width="1.5"/><ellipse cx="15" cy="14" rx="4" ry="3" fill="#ffd060" opacity="0.5"/>' },
+      { name: 'Milk', svg: '<rect x="10" y="8" width="16" height="22" rx="2" fill="#fff" stroke="#ccc" stroke-width="1.5"/><rect x="10" y="8" width="16" height="6" fill="#4a90d9" rx="2"/>' },
+      { name: 'Berries', svg: '<circle cx="13" cy="20" r="5" fill="#8b4789"/><circle cx="22" cy="18" r="5" fill="#8b4789"/><circle cx="17" cy="24" r="4" fill="#a060a0"/><circle cx="14" cy="19" r="1.5" fill="#c080c0" opacity="0.5"/>' },
+      { name: 'Sugar', svg: '<rect x="8" y="10" width="20" height="16" rx="2" fill="#fff" stroke="#e8e8e8" stroke-width="1.5"/>' },
     ]
   },
   cheeseburgers: {
-    name: 'Cheeseburgers', icon: '🍔',
+    name: 'Cheeseburgers', icon: '🍔', color: '#e8a060',
     ingredients: [
-      { icon: '🍞', name: 'Buns' },
-      { icon: '🥩', name: 'Beef Patty' },
-      { icon: '🧀', name: 'Cheese' },
-      { icon: '🥬', name: 'Lettuce' },
-      { icon: '🍅', name: 'Tomato' },
+      { name: 'Buns', svg: '<path d="M6 18 Q6 8 18 8 Q30 8 30 18 Z" fill="#e8c080" stroke="#c0a060" stroke-width="1.5"/><rect x="6" y="18" width="24" height="4" rx="2" fill="#d4a868"/><path d="M6 22 L30 22 L28 26 L8 26 Z" fill="#e8c080" stroke="#c0a060" stroke-width="1.5"/>' },
+      { name: 'Beef Patty', svg: '<ellipse cx="18" cy="18" rx="14" ry="6" fill="#7a4a2a" stroke="#5a3010" stroke-width="1.5"/><ellipse cx="18" cy="16" rx="12" ry="4" fill="#8b5a35"/>' },
+      { name: 'Cheese', svg: '<path d="M6 12 L30 12 L28 20 L8 20 Z" fill="#f9d75e" stroke="#e0c040" stroke-width="1.5"/><path d="M6 12 L4 14 L6 16" fill="#f9d75e" stroke="#e0c040" stroke-width="1.5"/>' },
+      { name: 'Lettuce', svg: '<path d="M4 16 Q8 10 14 14 Q20 8 26 14 Q32 10 34 16 Q30 20 24 17 Q18 22 12 17 Q6 20 4 16Z" fill="#7ec850" stroke="#5aa030" stroke-width="1.5"/>' },
+      { name: 'Tomato', svg: '<circle cx="18" cy="18" r="13" fill="#e84545" stroke="#c83535" stroke-width="1.5"/><circle cx="18" cy="18" r="10" fill="#ff5757"/><circle cx="14" cy="14" r="2" fill="#ff8080" opacity="0.5"/>' },
     ]
   },
   nuggets: {
-    name: 'Chicken Nuggets & Fries', icon: '🍗',
+    name: 'Chicken Nuggets & Fries', icon: '🍗', color: '#f0c060',
     ingredients: [
-      { icon: '🍗', name: 'Chicken' },
-      { icon: '🍞', name: 'Breadcrumbs' },
-      { icon: '🥔', name: 'Potatoes' },
-      { icon: '🫒', name: 'Oil' },
+      { name: 'Chicken', svg: '<path d="M10 8 Q8 14 12 20 Q14 26 18 24 Q22 22 24 18 Q26 12 22 8 Q16 6 10 8Z" fill="#f5c89" stroke="#d4a868" stroke-width="1.5"/><ellipse cx="14" cy="12" rx="2" ry="1.5" fill="#e8b88a"/>' },
+      { name: 'Breadcrumbs', svg: '<rect x="8" y="12" width="20" height="12" rx="2" fill="#e8c080" stroke="#c0a060" stroke-width="1.5"/><circle cx="13" cy="16" r="1.5" fill="#c0a060"/><circle cx="19" cy="18" r="1.5" fill="#c0a060"/><circle cx="23" cy="15" r="1" fill="#c0a060"/>' },
+      { name: 'Potatoes', svg: '<ellipse cx="12" cy="14" rx="6" ry="4" fill="#d4a868" stroke="#b08850" stroke-width="1.5"/><ellipse cx="24" cy="20" rx="6" ry="4" fill="#d4a868" stroke="#b08850" stroke-width="1.5"/><circle cx="10" cy="13" r="1" fill="#b08850"/><circle cx="25" cy="21" r="1" fill="#b08850"/>' },
+      { name: 'Oil', svg: '<rect x="10" y="6" width="16" height="24" rx="3" fill="#c8d860" stroke="#a0b040" stroke-width="1.5"/><rect x="10" y="6" width="16" height="5" fill="#a0b040" rx="3"/>' },
     ]
   },
   salad: {
-    name: 'Salad', icon: '🥗',
+    name: 'Salad', icon: '🥗', color: '#7ec850',
     ingredients: [
-      { icon: '🥬', name: 'Lettuce' },
-      { icon: '🍅', name: 'Tomato' },
-      { icon: '🥒', name: 'Cucumber' },
-      { icon: '🥕', name: 'Carrots' },
-      { icon: '🧴', name: 'Dressing' },
+      { name: 'Lettuce', svg: '<path d="M4 16 Q8 10 14 14 Q20 8 26 14 Q32 10 34 16 Q30 20 24 17 Q18 22 12 17 Q6 20 4 16Z" fill="#7ec850" stroke="#5aa030" stroke-width="1.5"/>' },
+      { name: 'Tomato', svg: '<circle cx="18" cy="18" r="13" fill="#e84545" stroke="#c83535" stroke-width="1.5"/><circle cx="18" cy="18" r="10" fill="#ff5757"/><circle cx="14" cy="14" r="2" fill="#ff8080" opacity="0.5"/>' },
+      { name: 'Cucumber', svg: '<ellipse cx="18" cy="18" rx="14" ry="5" fill="#7ec850" stroke="#5aa030" stroke-width="1.5"/><ellipse cx="18" cy="17" rx="12" ry="3" fill="#a0d870"/>' },
+      { name: 'Carrots', svg: '<path d="M16 6 L20 6 L22 28 L14 28 Z" fill="#ff8c20" stroke="#e07020" stroke-width="1.5"/><path d="M16 6 L20 6 L18 4 Z" fill="#7ec850"/>' },
+      { name: 'Dressing', svg: '<rect x="10" y="6" width="16" height="24" rx="3" fill="#f9d75e" stroke="#e0c040" stroke-width="1.5"/><rect x="10" y="6" width="16" height="5" fill="#e0c040" rx="3"/>' },
     ]
   },
   garlicbread: {
-    name: 'Garlic Bread', icon: '🥖',
+    name: 'Garlic Bread', icon: '🥖', color: '#e8c080',
     ingredients: [
-      { icon: '🍞', name: 'Bread' },
-      { icon: '🧈', name: 'Butter' },
-      { icon: '🧄', name: 'Garlic' },
-      { icon: '🌿', name: 'Parsley' },
+      { name: 'Bread', svg: '<path d="M8 14 Q8 8 18 8 Q28 8 28 14 L28 22 Q28 26 18 26 Q8 26 8 22Z" fill="#e8c080" stroke="#c0a060" stroke-width="1.5"/><path d="M12 14 Q18 12 24 14" stroke="#c0a060" stroke-width="1" fill="none"/>' },
+      { name: 'Butter', svg: '<rect x="8" y="12" width="20" height="12" rx="2" fill="#f9d75e" stroke="#e0c040" stroke-width="1.5"/>' },
+      { name: 'Garlic', svg: '<ellipse cx="18" cy="16" rx="8" ry="7" fill="#f5e6c8" stroke="#d4b896" stroke-width="1.5"/><path d="M14 12 Q14 8 16 6" stroke="#7ec850" stroke-width="2" fill="none"/><path d="M18 10 Q18 6 20 4" stroke="#7ec850" stroke-width="2" fill="none"/>' },
+      { name: 'Parsley', svg: '<path d="M18 28 Q14 22 10 18 M18 28 Q22 22 26 18 M18 28 Q18 20 16 14 M18 28 Q18 20 20 14" stroke="#5aa030" stroke-width="2" fill="none"/><circle cx="10" cy="18" r="2" fill="#7ec850"/><circle cx="26" cy="18" r="2" fill="#7ec850"/><circle cx="16" cy="14" r="2" fill="#7ec850"/><circle cx="20" cy="14" r="2" fill="#7ec850"/>' },
     ]
   },
   spaghetti: {
-    name: 'Spaghetti & Meatballs', icon: '🍝',
+    name: 'Spaghetti & Meatballs', icon: '🍝', color: '#e84545',
     ingredients: [
-      { icon: '🍝', name: 'Pasta' },
-      { icon: '🥩', name: 'Ground Beef' },
-      { icon: '🍅', name: 'Tomato Sauce' },
-      { icon: '🧄', name: 'Garlic' },
-      { icon: '🧀', name: 'Parmesan' },
+      { name: 'Pasta', svg: '<path d="M8 8 Q12 12 8 16 Q4 20 8 24 Q12 28 8 30" stroke="#f5e6a0" stroke-width="2" fill="none"/><path d="M14 8 Q18 12 14 16 Q10 20 14 24 Q18 28 14 30" stroke="#f5e6a0" stroke-width="2" fill="none"/><path d="M20 8 Q24 12 20 16 Q16 20 20 24 Q24 28 20 30" stroke="#f5e6a0" stroke-width="2" fill="none"/><path d="M26 8 Q30 12 26 16 Q22 20 26 24 Q30 28 26 30" stroke="#f5e6a0" stroke-width="2" fill="none"/>' },
+      { name: 'Ground Beef', svg: '<circle cx="14" cy="16" r="6" fill="#7a4a2a" stroke="#5a3010" stroke-width="1.5"/><circle cx="24" cy="20" r="7" fill="#8b5a35" stroke="#5a3010" stroke-width="1.5"/><circle cx="12" cy="22" r="5" fill="#7a4a2a" stroke="#5a3010" stroke-width="1.5"/>' },
+      { name: 'Tomato Sauce', svg: '<path d="M6 10 Q10 6 18 8 Q26 6 30 10 Q32 18 28 24 Q20 28 12 26 Q4 22 6 10Z" fill="#e84545" stroke="#c83535" stroke-width="1.5"/><circle cx="12" cy="14" r="1.5" fill="#ff5757"/><circle cx="22" cy="18" r="2" fill="#ff5757"/>' },
+      { name: 'Garlic', svg: '<ellipse cx="18" cy="16" rx="8" ry="7" fill="#f5e6c8" stroke="#d4b896" stroke-width="1.5"/><path d="M14 12 Q14 8 16 6" stroke="#7ec850" stroke-width="2" fill="none"/>' },
+      { name: 'Parmesan', svg: '<path d="M8 10 L28 10 L30 14 L28 26 L8 26 L6 14Z" fill="#f5e6a0" stroke="#d4c880" stroke-width="1.5"/><circle cx="14" cy="16" r="1.5" fill="#d4c880"/><circle cx="22" cy="20" r="1.5" fill="#d4c880"/>' },
     ]
   },
+};
+
+// ─── Character Config ───
+const charConfig = {
+  veda: {
+    name: 'Veda',
+    hair: '#6b3410', hairDark: '#5b2900',
+    dress: '#e84545', dressDark: '#c83535',
+    eyes: '#2a1a4a'
+  },
+  juniper: {
+    name: 'Juniper',
+    hair: '#f0d050', hairDark: '#ffe060',
+    dress: '#5b8def', dressDark: '#4b7ddf',
+    eyes: '#2a4a1a'
+  }
 };
 
 // ─── Character Select ───
 function selectCharacter(char) {
   selectedChar = char;
-  const sprite = document.getElementById('charSprite');
-  sprite.className = 'css-char ' + char;
-  document.getElementById('charLabel').textContent = char === 'veda' ? 'Veda' : 'Juniper';
+  const cfg = charConfig[char];
+  document.getElementById('charLabel').textContent = cfg.name;
+
+  // Update SVG colors
+  const svg = document.getElementById('charSVG');
+  document.getElementById('charHair').setAttribute('fill', cfg.hair);
+  document.querySelectorAll('#charHair path').forEach(p => p.setAttribute('fill', cfg.hair));
+  document.getElementById('charDress').setAttribute('fill', cfg.dress);
+  document.querySelector('#charDress + path').setAttribute('stroke', cfg.dressDark);
+  document.getElementById('charEyeL').setAttribute('fill', cfg.eyes);
+  document.getElementById('charEyeR').setAttribute('fill', cfg.eyes);
 
   document.getElementById('charSelect').classList.remove('active');
   document.getElementById('gameScreen').classList.add('active');
@@ -461,7 +645,7 @@ function selectCharacter(char) {
 function selectFood(key) {
   selectedFood = key;
   const food = foods[key];
-  document.getElementById('navTitle').textContent = food.name + ' Ingredients';
+  document.getElementById('navTitle').textContent = food.name;
   document.getElementById('navBack').classList.add('show');
   document.getElementById('foodList').style.display = 'none';
 
@@ -474,21 +658,26 @@ function selectFood(key) {
     item.className = 'ingredient-item';
     item.draggable = true;
     item.dataset.idx = idx;
-    item.innerHTML = `<span class="ing-icon">${ing.icon}</span><span class="ing-name">${ing.name}</span>`;
+    item.innerHTML = `
+      <svg class="ing-svg" viewBox="0 0 36 36">${ing.svg}</svg>
+      <span class="ing-name">${ing.name}</span>
+      <span class="ing-check">✓</span>
+    `;
+    // Drag events
     item.addEventListener('dragstart', handleDragStart);
     item.addEventListener('dragend', handleDragEnd);
-    // Also support click-to-add for mobile
-    item.addEventListener('click', () => addIngredientToTable(idx, item));
+    // Touch / click fallback
+    item.addEventListener('click', () => tapIngredientToTable(idx, item));
     list.appendChild(item);
   });
 
-  // Reset table
+  // Reset
   ingredientsOnTable = [];
-  document.getElementById('prepTable').innerHTML = '<div class="table-label">Prep Table — drag ingredients here</div>';
+  document.getElementById('prepTable').innerHTML = '<div class="table-label">Prep Table — drag or tap ingredients</div>';
   document.getElementById('cookBtn').classList.remove('show');
   document.getElementById('dishComplete').classList.remove('show');
   currentStep = 'preparing';
-  showPrompt('Drag ingredients to the prep table!');
+  showPrompt('Drag or tap ingredients to add them to the prep table!');
 }
 
 function showFoodList() {
@@ -511,19 +700,30 @@ let draggedIdx = null;
 let draggedElement = null;
 
 function handleDragStart(e) {
-  draggedIdx = parseInt(e.target.dataset.idx);
-  draggedElement = e.target;
-  e.target.classList.add('dragging');
+  draggedIdx = parseInt(e.currentTarget.dataset.idx);
+  draggedElement = e.currentTarget;
+  e.currentTarget.classList.add('dragging');
   e.dataTransfer.effectAllowed = 'move';
+  // Set drag image
+  const ghost = e.currentTarget.querySelector('svg').cloneNode(true);
+  ghost.style.width = '40px'; ghost.style.height = '40px';
+  ghost.style.position = 'absolute'; ghost.style.top = '-100px';
+  document.body.appendChild(ghost);
+  e.dataTransfer.setDragImage(ghost, 20, 20);
+  setTimeout(() => document.body.removeChild(ghost), 0);
 }
 
 function handleDragEnd(e) {
-  e.target.classList.remove('dragging');
+  e.currentTarget.classList.remove('dragging');
 }
 
-// Click-to-add for mobile/touch
+// Tap to add (mobile-friendly)
+function tapIngredientToTable(idx, element) {
+  if (element.classList.contains('used') || charBusy) return;
+  addIngredientToTable(idx, element);
+}
+
 function addIngredientToTable(idx, element) {
-  if (element.classList.contains('used')) return;
   const food = foods[selectedFood];
   const ing = food.ingredients[idx];
   if (ingredientsOnTable.some(i => i.idx === idx)) return;
@@ -532,53 +732,70 @@ function addIngredientToTable(idx, element) {
   element.classList.add('used');
 
   renderTable();
-  checkAllIngredients();
+
+  // Character walks to table to prep
+  if (ingredientsOnTable.length === food.ingredients.length) {
+    allIngredientsReady();
+  } else {
+    showPrompt(`${ingredientsOnTable.length}/${food.ingredients.length} ingredients on the table!`);
+  }
 }
 
-// Desktop drag events
-document.addEventListener('DOMContentLoaded', () => {
+// Desktop drop
+function setupDropZone() {
   const table = document.getElementById('prepTable');
   table.addEventListener('dragover', (e) => { e.preventDefault(); table.classList.add('drop-active'); });
   table.addEventListener('dragleave', () => table.classList.remove('drop-active'));
   table.addEventListener('drop', (e) => {
     e.preventDefault();
     table.classList.remove('drop-active');
-    if (draggedIdx === null) return;
-    const food = foods[selectedFood];
-    const ing = food.ingredients[draggedIdx];
-    if (ingredientsOnTable.some(i => i.idx === draggedIdx)) return;
+    if (draggedIdx === null || charBusy) return;
 
-    ingredientsOnTable.push({ idx: draggedIdx, ...ing });
-    if (draggedElement) draggedElement.classList.add('used');
-
-    renderTable();
-    checkAllIngredients();
+    const items = document.querySelectorAll('.ingredient-item');
+    const element = Array.from(items).find(el => parseInt(el.dataset.idx) === draggedIdx);
+    if (element && !element.classList.contains('used')) {
+      addIngredientToTable(draggedIdx, element);
+    }
     draggedIdx = null;
   });
-});
+}
+document.addEventListener('DOMContentLoaded', setupDropZone);
 
 function renderTable() {
   const table = document.getElementById('prepTable');
   let html = '<div class="table-label">Prep Table</div>';
   ingredientsOnTable.forEach(ing => {
-    html += `<span style="font-size:2rem;" title="${ing.name}">${ing.icon}</span>`;
+    html += `<svg class="table-ingredient" viewBox="0 0 36 36">${ing.svg}</svg>`;
   });
   table.innerHTML = html;
 }
 
-function checkAllIngredients() {
+// ─── All Ingredients Ready ───
+function allIngredientsReady() {
   const food = foods[selectedFood];
-  if (ingredientsOnTable.length === food.ingredients.length) {
-    currentStep = 'ready_to_cook';
-    showPrompt('All ingredients ready! Click the oven to cook.');
-    document.getElementById('cookBtn').classList.add('show');
-    walkCharTo('table');
-  }
+  currentStep = 'ready_to_prep';
+  charBusy = true;
+  showPrompt('Time to prepare! Let\'s get cooking...');
+
+  // Character walks to table
+  walkCharTo('table', () => {
+    // Start prepping animation
+    setCharState('prep');
+    showPrompt('Preparing ingredients... 🔪');
+
+    setTimeout(() => {
+      setCharState('idle');
+      currentStep = 'ready_to_cook';
+      charBusy = false;
+      showPrompt('All prepped! Click the oven to cook.');
+      document.getElementById('cookBtn').classList.add('show');
+    }, 2500);
+  });
 }
 
 // ─── Cooking ───
 function clickOven() {
-  if (currentStep === 'ready_to_cook') {
+  if (currentStep === 'ready_to_cook' && !charBusy) {
     startCooking();
   }
 }
@@ -586,18 +803,22 @@ function clickOven() {
 function startCooking() {
   if (currentStep !== 'ready_to_cook') return;
   currentStep = 'cooking';
+  charBusy = true;
   document.getElementById('cookBtn').classList.remove('show');
   hidePrompt();
 
   const food = foods[selectedFood];
 
-  // Walk character to oven
-  walkCharTo('oven');
+  // Show carrying item
+  setCharState('carry');
 
-  // After character reaches oven, start timer
-  setTimeout(() => {
+  // Walk to oven
+  walkCharTo('oven', () => {
+    setCharState('idle');
+
     // Show food in oven
-    document.getElementById('ovenWindow').textContent = food.icon;
+    document.getElementById('ovenWindow').innerHTML =
+      `<span style="font-size:1.8rem;">${food.icon}</span>`;
     document.getElementById('oven').classList.add('oven-active');
 
     // Start countdown
@@ -617,58 +838,81 @@ function startCooking() {
         finishCooking();
       }
     }, 1000);
-  }, 1500);
+  });
 }
 
 function finishCooking() {
   const food = foods[selectedFood];
   currentStep = 'done';
 
-  // Walk character back to table
-  walkCharTo('table');
+  // Walk character back to table with dish
+  setCharState('carry');
+  walkCharTo('table', () => {
+    setCharState('idle');
 
-  setTimeout(() => {
     // Clear oven
-    document.getElementById('ovenWindow').textContent = '🔥';
+    document.getElementById('ovenWindow').innerHTML =
+      '<svg width="40" height="30" viewBox="0 0 40 30"><rect x="5" y="8" width="30" height="20" rx="3" fill="#ff6b35" opacity="0.3"/></svg>';
     document.getElementById('oven').classList.remove('oven-active');
 
-    // Show completed dish on table
+    // Show completed dish
     const dish = document.getElementById('dishComplete');
-    dish.textContent = food.icon;
+    dish.innerHTML = `<span style="font-size:3.5rem;">${food.icon}</span>`;
     dish.classList.add('show');
 
-    // Update prep table
+    // Update table
     document.getElementById('prepTable').innerHTML =
-      `<div class="table-label">Prep Table</div><span style="font-size:2.5rem;">${food.icon}</span>`;
+      `<div class="table-label">${food.name} — Ready! 🎉</div><span style="font-size:2.5rem;">${food.icon}</span>`;
 
-    showPrompt(`${food.name} is ready! 🎉 Pick another dish from the menu!`);
+    showPrompt(`${food.name} is ready! 🎉 Pick another dish!`);
     currentStep = 'select';
+    charBusy = false;
 
-    // Re-enable ingredients for next round
+    // Reset ingredients
     document.querySelectorAll('.ingredient-item').forEach(item => item.classList.remove('used'));
     ingredientsOnTable = [];
-  }, 1500);
+  });
 }
 
 // ─── Character Movement ───
-function walkCharTo(target) {
+function walkCharTo(target, callback) {
   const char = document.getElementById('kitchenChar');
-  const sprite = document.getElementById('charSprite');
   const kitchen = document.getElementById('kitchen');
   const kw = kitchen.offsetWidth;
 
-  sprite.classList.add('walking');
+  setCharState('walk');
 
   let targetLeft;
   if (target === 'oven') {
-    targetLeft = kw - 140; // near oven
+    targetLeft = kw - 160; // near oven (right side)
   } else {
-    targetLeft = kw * 0.35; // near table center
+    targetLeft = kw * 0.22; // near table (left-center)
   }
 
   char.style.left = targetLeft + 'px';
 
-  setTimeout(() => sprite.classList.remove('walking'), 1500);
+  setTimeout(() => {
+    setCharState('idle');
+    if (callback) callback();
+  }, 1300);
+}
+
+function setCharState(state) {
+  const charEl = document.getElementById('kitchenChar');
+  charEl.classList.remove('char-walk', 'char-prep', 'char-carry');
+  if (state === 'walk') charEl.classList.add('char-walk');
+  else if (state === 'prep') charEl.classList.add('char-prep');
+  else if (state === 'carry') charEl.classList.add('char-carry');
+
+  // Update mouth based on state
+  const mouth = document.getElementById('charMouth');
+  if (state === 'prep') {
+    mouth.setAttribute('d', 'M35 38 Q40 36 45 38'); // focused
+  } else if (state === 'carry') {
+    mouth.setAttribute('d', 'M35 37 Q40 41 45 37'); // happy
+  } else {
+    mouth.setAttribute('d', 'M36 38 Q40 42 44 38'); // default smile
+  }
 }
 
 // ─── Audio (Bell Ding) ───
@@ -679,41 +923,22 @@ function playDing() {
   }
   const now = audioCtx.currentTime;
 
-  // First ding
-  const osc1 = audioCtx.createOscillator();
-  const gain1 = audioCtx.createGain();
-  osc1.connect(gain1);
-  gain1.connect(audioCtx.destination);
-  osc1.frequency.value = 880;
-  osc1.type = 'sine';
-  gain1.gain.setValueAtTime(0, now);
-  gain1.gain.linearRampToValueAtTime(0.5, now + 0.01);
-  gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
-  osc1.start(now);
-  osc1.stop(now + 0.5);
+  const playTone = (freq, startTime, duration, vol) => {
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    osc.frequency.value = freq;
+    osc.type = 'sine';
+    gain.gain.setValueAtTime(0, startTime);
+    gain.gain.linearRampToValueAtTime(vol, startTime + 0.01);
+    gain.gain.exponentialRampToValueAtTime(0.001, startTime + duration);
+    osc.start(startTime);
+    osc.stop(startTime + duration);
+  };
 
-  // Second ding (slightly lower, delayed)
-  const osc2 = audioCtx.createOscillator();
-  const gain2 = audioCtx.createGain();
-  osc2.connect(gain2);
-  gain2.connect(audioCtx.destination);
-  osc2.frequency.value = 660;
-  osc2.type = 'sine';
-  gain2.gain.setValueAtTime(0, now + 0.15);
-  gain2.gain.linearRampToValueAtTime(0.3, now + 0.16);
-  gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.65);
-  osc2.start(now + 0.15);
-  osc2.stop(now + 0.65);
-}
-
-// ─── Prompts ───
-function showPrompt(text) {
-  const el = document.getElementById('actionPrompt');
-  el.textContent = text;
-  el.classList.add('show');
-}
-function hidePrompt() {
-  document.getElementById('actionPrompt').classList.remove('show');
+  playTone(880, now, 0.5, 0.5);      // first ding
+  playTone(660, now + 0.15, 0.5, 0.3); // second ding
 }
 </script>
 </body>
