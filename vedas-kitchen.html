@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Veda & Juniper's Kitchen</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, 'Segoe UI', system-ui, sans-serif;
+  background: #2c1810;
+  color: #fff;
+  overflow: hidden;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* ─── Screens ─── */
+.screen { display: none; width: 100vw; height: 100vh; }
+.screen.active { display: flex; }
+
+/* ─── Character Select ─── */
+#charSelect {
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 40px;
+  background: linear-gradient(180deg, #4a2c1a 0%, #2c1810 100%);
+}
+#charSelect h1 {
+  font-size: clamp(1.6rem, 5vw, 2.8rem);
+  color: #ffd700;
+  text-shadow: 0 0 20px rgba(255,215,0,0.4);
+}
+#charSelect .subtitle { font-size: 1.1rem; color: #ccc; }
+.char-cards { display: flex; gap: 40px; flex-wrap: wrap; justify-content: center; }
+.char-card {
+  background: #16213e;
+  border-radius: 20px;
+  padding: 30px 40px;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+  text-align: center;
+  border: 3px solid transparent;
+}
+.char-card:hover { transform: scale(1.05); box-shadow: 0 0 30px rgba(255,215,0,0.3); border-color: #ffd700; }
+.char-card .char-avatar { font-size: 5rem; margin-bottom: 12px; }
+.char-card .char-name { font-size: 1.4rem; font-weight: 700; color: #ffd700; }
+
+/* ─── CSS Character Avatars ─── */
+.css-char {
+  width: 60px; height: 90px; position: relative;
+  transition: left 1.5s ease-in-out, top 1.5s ease-in-out;
+}
+.css-char .head {
+  width: 36px; height: 36px; border-radius: 50%;
+  position: absolute; top: 0; left: 12px; z-index: 2;
+}
+.css-char .hair {
+  width: 42px; height: 28px; border-radius: 50% 50% 30% 30%;
+  position: absolute; top: -4px; left: 9px; z-index: 3;
+}
+.css-char .body {
+  width: 40px; height: 50px; border-radius: 12px 12px 8px 8px;
+  position: absolute; top: 32px; left: 10px; z-index: 1;
+}
+.css-char .legs { position: absolute; top: 78px; left: 16px; width: 28px; height: 12px; }
+.css-char .leg {
+  width: 10px; height: 12px; border-radius: 0 0 4px 4px;
+  display: inline-block; margin-right: 4px;
+}
+.veda .head { background: #f5c89; }
+.veda .hair { background: #6b3410; }
+.veda .body { background: #e84545; }
+.veda .legs .leg { background: #2a1a0a; }
+.juniper .head { background: #f5c89; }
+.juniper .hair { background: #f0d050; }
+.juniper .body { background: #5b8def; }
+.juniper .legs .leg { background: #2a1a0a; }
+
+/* Walking animation */
+.css-char.walking .leg { animation: walkLeg 0.4s infinite alternate; }
+.css-char.walking .leg:last-child { animation-delay: 0.2s; }
+@keyframes walkLeg { from { transform: rotate(-15deg); } to { transform: rotate(15deg); } }
+
+/* ─── Game Screen ─── */
+#gameScreen { flex-direction: row; }
+
+/* Left Navigation */
+.nav-panel {
+  width: 300px; min-width: 300px;
+  background: #1a1a2e;
+  border-right: 2px solid #333;
+  display: flex; flex-direction: column;
+  overflow-y: auto;
+}
+.nav-header {
+  padding: 16px;
+  background: #16213e;
+  border-bottom: 2px solid #333;
+  display: flex; align-items: center; gap: 12px;
+}
+.nav-back {
+  background: #333; border: none; color: #fff;
+  width: 36px; height: 36px; border-radius: 8px;
+  font-size: 1.2rem; cursor: pointer;
+  display: none; align-items: center; justify-content: center;
+  transition: background 0.15s;
+}
+.nav-back:hover { background: #555; }
+.nav-back.show { display: flex; }
+.nav-title { font-size: 1.1rem; font-weight: 700; color: #ffd700; }
+
+.food-list { padding: 12px; display: flex; flex-direction: column; gap: 10px; }
+.food-card {
+  display: flex; align-items: center; gap: 14px;
+  background: #16213e; border-radius: 12px; padding: 14px;
+  cursor: pointer; transition: transform 0.15s, background 0.15s;
+  border: 2px solid transparent;
+}
+.food-card:hover { transform: translateX(4px); background: #1a2744; border-color: #ffd700; }
+.food-card .food-icon { font-size: 2.5rem; }
+.food-card .food-name { font-size: 1rem; font-weight: 600; }
+
+.ingredient-list { padding: 12px; display: none; flex-direction: column; gap: 10px; }
+.ingredient-list.show { display: flex; }
+.ingredient-item {
+  display: flex; align-items: center; gap: 12px;
+  background: #16213e; border-radius: 10px; padding: 12px;
+  cursor: grab; transition: transform 0.15s, box-shadow 0.15s;
+  border: 2px solid #333;
+}
+.ingredient-item:hover { transform: scale(1.02); box-shadow: 0 0 12px rgba(255,215,0,0.2); border-color: #ffd700; }
+.ingredient-item.dragging { opacity: 0.5; }
+.ingredient-item.used { opacity: 0.3; pointer-events: none; }
+.ingredient-item .ing-icon { font-size: 2rem; }
+.ingredient-item .ing-name { font-size: 0.95rem; }
+
+/* ─── Kitchen Area ─── */
+.kitchen {
+  flex: 1; position: relative;
+  background: linear-gradient(180deg, #5a3a2a 0%, #3a241a 70%, #2c1810 100%);
+  overflow: hidden;
+}
+.kitchen-floor {
+  position: absolute; bottom: 0; left: 0; right: 0; height: 35%;
+  background: repeating-linear-gradient(90deg, #6b4a35 0px, #6b4a35 60px, #5a3a2a 60px, #5a3a2a 120px);
+  border-top: 3px solid #4a2a1a;
+}
+.counter {
+  position: absolute;
+  background: linear-gradient(180deg, #8b6b4a 0%, #6b4a35 100%);
+  border-radius: 8px 8px 0 0;
+  box-shadow: 0 -2px 8px rgba(0,0,0,0.3);
+}
+
+/* Table */
+.prep-table {
+  position: absolute; bottom: 15%; left: 50%; transform: translateX(-50%);
+  width: 280px; height: 100px;
+  background: linear-gradient(180deg, #c4956a 0%, #8b6b4a 100%);
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+  display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: center;
+  padding: 12px;
+}
+.prep-table.drop-active { box-shadow: 0 0 20px rgba(255,215,0,0.5); }
+.table-label {
+  position: absolute; top: -28px; left: 50%; transform: translateX(-50%);
+  font-size: 0.75rem; color: #aaa; white-space: nowrap;
+}
+
+/* Oven */
+.oven {
+  position: absolute; bottom: 15%; right: 5%;
+  width: 120px; height: 160px;
+  background: linear-gradient(180deg, #555 0%, #333 100%);
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+  cursor: pointer; display: flex; flex-direction: column; align-items: center;
+  padding: 12px; gap: 8px;
+  border: 3px solid #444;
+  transition: border-color 0.2s;
+}
+.oven:hover { border-color: #ffd700; }
+.oven.oven-active { border-color: #ff6b35; animation: ovenGlow 1s infinite alternate; }
+@keyframes ovenGlow { from { box-shadow: 0 0 8px rgba(255,107,53,0.3); } to { box-shadow: 0 0 24px rgba(255,107,53,0.6); } }
+.oven-window {
+  width: 80px; height: 60px; background: #1a1a1a;
+  border-radius: 8px; border: 2px solid #666;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 2rem;
+}
+.oven-label { font-size: 0.8rem; color: #aaa; }
+
+/* Character in kitchen */
+.kitchen-char {
+  position: absolute; bottom: 15%; left: 20%;
+  z-index: 10;
+}
+
+/* Dragged ingredient */
+.dragging-ghost {
+  position: fixed; pointer-events: none; z-index: 9999;
+  font-size: 2rem; opacity: 0.8;
+}
+
+/* Prepared dish on table */
+.prepared-dish {
+  font-size: 3rem; animation: popIn 0.4s;
+}
+@keyframes popIn { from { transform: scale(0); } to { transform: scale(1); } }
+
+/* Timer popup */
+.timer-popup {
+  position: absolute; top: 30%; left: 50%; transform: translateX(-50%);
+  background: rgba(0,0,0,0.85); border-radius: 20px; padding: 24px 48px;
+  text-align: center; z-index: 100; display: none;
+  border: 3px solid #ffd700;
+}
+.timer-popup.show { display: block; animation: popIn 0.3s; }
+.timer-popup .timer-number { font-size: 3rem; font-weight: 700; color: #ffd700; }
+.timer-popup .timer-label { font-size: 0.9rem; color: #ccc; margin-top: 4px; }
+
+/* Action prompt */
+.action-prompt {
+  position: absolute; top: 16px; left: 50%; transform: translateX(-50%);
+  background: rgba(0,0,0,0.7); border-radius: 12px; padding: 8px 20px;
+  font-size: 0.9rem; color: #ffd700; z-index: 50;
+  display: none;
+}
+.action-prompt.show { display: block; }
+
+/* Status bar */
+.status-bar {
+  position: absolute; top: 16px; right: 16px;
+  background: rgba(0,0,0,0.6); border-radius: 10px; padding: 8px 16px;
+  font-size: 0.85rem; color: #ccc; z-index: 50;
+}
+.status-bar .char-label { color: #ffd700; font-weight: 700; }
+
+/* Completed dish indicator */
+.dish-complete {
+  position: absolute; bottom: 15%; left: 50%; transform: translateX(-50%);
+  z-index: 20; font-size: 4rem; display: none;
+  animation: popIn 0.5s;
+}
+.dish-complete.show { display: block; }
+
+/* Cook button */
+.cook-btn {
+  position: absolute; bottom: 18%; right: 5%;
+  background: #ff6b35; color: #fff; border: none;
+  padding: 10px 20px; border-radius: 8px; font-size: 0.95rem;
+  cursor: pointer; z-index: 20; display: none;
+  font-weight: 700; box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+}
+.cook-btn.show { display: block; animation: popIn 0.3s; }
+.cook-btn:hover { background: #ff8555; }
+</style>
+</head>
+<body>
+
+<!-- ═══ Character Select Screen ═══ -->
+<div id="charSelect" class="screen active">
+  <h1>👨‍🍳 Veda & Juniper's Kitchen</h1>
+  <p class="subtitle">Pick your chef!</p>
+  <div class="char-cards">
+    <div class="char-card" onclick="selectCharacter('veda')">
+      <div class="char-avatar">
+        <div class="css-char veda" style="position:relative;left:0;top:0;transform:scale(1.5);">
+          <div class="hair"></div>
+          <div class="head"></div>
+          <div class="body"></div>
+          <div class="legs"><div class="leg"></div><div class="leg"></div></div>
+        </div>
+      </div>
+      <div class="char-name">Veda</div>
+    </div>
+    <div class="char-card" onclick="selectCharacter('juniper')">
+      <div class="char-avatar">
+        <div class="css-char juniper" style="position:relative;left:0;top:0;transform:scale(1.5);">
+          <div class="hair"></div>
+          <div class="head"></div>
+          <div class="body"></div>
+          <div class="legs"><div class="leg"></div><div class="leg"></div></div>
+        </div>
+      </div>
+      <div class="char-name">Juniper</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ Game Screen ═══ -->
+<div id="gameScreen" class="screen">
+  <!-- Navigation Panel -->
+  <div class="nav-panel">
+    <div class="nav-header">
+      <button class="nav-back" id="navBack" onclick="showFoodList()">←</button>
+      <span class="nav-title" id="navTitle">Choose a Dish</span>
+    </div>
+    <div class="food-list" id="foodList">
+      <div class="food-card" onclick="selectFood('cake')">
+        <div class="food-icon">🎂</div><div class="food-name">Cake</div>
+      </div>
+      <div class="food-card" onclick="selectFood('muffins')">
+        <div class="food-icon">🧁</div><div class="food-name">Muffins</div>
+      </div>
+      <div class="food-card" onclick="selectFood('cheeseburgers')">
+        <div class="food-icon">🍔</div><div class="food-name">Cheeseburgers</div>
+      </div>
+      <div class="food-card" onclick="selectFood('nuggets')">
+        <div class="food-icon">🍗</div><div class="food-name">Chicken Nuggets & Fries</div>
+      </div>
+      <div class="food-card" onclick="selectFood('salad')">
+        <div class="food-icon">🥗</div><div class="food-name">Salad</div>
+      </div>
+      <div class="food-card" onclick="selectFood('garlicbread')">
+        <div class="food-icon">🥖</div><div class="food-name">Garlic Bread</div>
+      </div>
+      <div class="food-card" onclick="selectFood('spaghetti')">
+        <div class="food-icon">🍝</div><div class="food-name">Spaghetti & Meatballs</div>
+      </div>
+    </div>
+    <div class="ingredient-list" id="ingredientList"></div>
+  </div>
+
+  <!-- Kitchen -->
+  <div class="kitchen" id="kitchen">
+    <div class="kitchen-floor"></div>
+    <div class="status-bar">Chef: <span class="char-label" id="charLabel">—</span></div>
+    <div class="action-prompt" id="actionPrompt"></div>
+
+    <!-- Prep Table -->
+    <div class="prep-table" id="prepTable">
+      <div class="table-label">Prep Table — drag ingredients here</div>
+    </div>
+
+    <!-- Oven -->
+    <div class="oven" id="oven" onclick="clickOven()">
+      <div class="oven-window" id="ovenWindow">🔥</div>
+      <div class="oven-label">Oven</div>
+    </div>
+
+    <!-- Character -->
+    <div class="kitchen-char" id="kitchenChar">
+      <div class="css-char" id="charSprite">
+        <div class="hair"></div>
+        <div class="head"></div>
+        <div class="body"></div>
+        <div class="legs"><div class="leg"></div><div class="leg"></div></div>
+      </div>
+    </div>
+
+    <!-- Timer -->
+    <div class="timer-popup" id="timerPopup">
+      <div class="timer-number" id="timerNum">5</div>
+      <div class="timer-label">Cooking...</div>
+    </div>
+
+    <!-- Cook button -->
+    <button class="cook-btn" id="cookBtn" onclick="startCooking()">Put in Oven 👨‍🍳</button>
+
+    <!-- Completed dish -->
+    <div class="dish-complete" id="dishComplete"></div>
+  </div>
+</div>
+
+<script>
+// ─── Game State ───
+let selectedChar = null;
+let selectedFood = null;
+let ingredientsOnTable = [];
+let currentStep = 'select'; // select, preparing, ready_to_cook, cooking, done
+
+// ─── Food Data ───
+const foods = {
+  cake: {
+    name: 'Cake', icon: '🎂',
+    ingredients: [
+      { icon: '🌾', name: 'Flour' },
+      { icon: '🥚', name: 'Eggs' },
+      { icon: '🥛', name: 'Milk' },
+      { icon: '🧈', name: 'Butter' },
+      { icon: '🍬', name: 'Sugar' },
+    ]
+  },
+  muffins: {
+    name: 'Muffins', icon: '🧁',
+    ingredients: [
+      { icon: '🌾', name: 'Flour' },
+      { icon: '🥚', name: 'Eggs' },
+      { icon: '🥛', name: 'Milk' },
+      { icon: '🫐', name: 'Berries' },
+      { icon: '🍬', name: 'Sugar' },
+    ]
+  },
+  cheeseburgers: {
+    name: 'Cheeseburgers', icon: '🍔',
+    ingredients: [
+      { icon: '🍞', name: 'Buns' },
+      { icon: '🥩', name: 'Beef Patty' },
+      { icon: '🧀', name: 'Cheese' },
+      { icon: '🥬', name: 'Lettuce' },
+      { icon: '🍅', name: 'Tomato' },
+    ]
+  },
+  nuggets: {
+    name: 'Chicken Nuggets & Fries', icon: '🍗',
+    ingredients: [
+      { icon: '🍗', name: 'Chicken' },
+      { icon: '🍞', name: 'Breadcrumbs' },
+      { icon: '🥔', name: 'Potatoes' },
+      { icon: '🫒', name: 'Oil' },
+    ]
+  },
+  salad: {
+    name: 'Salad', icon: '🥗',
+    ingredients: [
+      { icon: '🥬', name: 'Lettuce' },
+      { icon: '🍅', name: 'Tomato' },
+      { icon: '🥒', name: 'Cucumber' },
+      { icon: '🥕', name: 'Carrots' },
+      { icon: '🧴', name: 'Dressing' },
+    ]
+  },
+  garlicbread: {
+    name: 'Garlic Bread', icon: '🥖',
+    ingredients: [
+      { icon: '🍞', name: 'Bread' },
+      { icon: '🧈', name: 'Butter' },
+      { icon: '🧄', name: 'Garlic' },
+      { icon: '🌿', name: 'Parsley' },
+    ]
+  },
+  spaghetti: {
+    name: 'Spaghetti & Meatballs', icon: '🍝',
+    ingredients: [
+      { icon: '🍝', name: 'Pasta' },
+      { icon: '🥩', name: 'Ground Beef' },
+      { icon: '🍅', name: 'Tomato Sauce' },
+      { icon: '🧄', name: 'Garlic' },
+      { icon: '🧀', name: 'Parmesan' },
+    ]
+  },
+};
+
+// ─── Character Select ───
+function selectCharacter(char) {
+  selectedChar = char;
+  const sprite = document.getElementById('charSprite');
+  sprite.className = 'css-char ' + char;
+  document.getElementById('charLabel').textContent = char === 'veda' ? 'Veda' : 'Juniper';
+
+  document.getElementById('charSelect').classList.remove('active');
+  document.getElementById('gameScreen').classList.add('active');
+  showPrompt('Pick a dish from the menu!');
+}
+
+// ─── Food Selection ───
+function selectFood(key) {
+  selectedFood = key;
+  const food = foods[key];
+  document.getElementById('navTitle').textContent = food.name + ' Ingredients';
+  document.getElementById('navBack').classList.add('show');
+  document.getElementById('foodList').style.display = 'none';
+
+  const list = document.getElementById('ingredientList');
+  list.innerHTML = '';
+  list.classList.add('show');
+
+  food.ingredients.forEach((ing, idx) => {
+    const item = document.createElement('div');
+    item.className = 'ingredient-item';
+    item.draggable = true;
+    item.dataset.idx = idx;
+    item.innerHTML = `<span class="ing-icon">${ing.icon}</span><span class="ing-name">${ing.name}</span>`;
+    item.addEventListener('dragstart', handleDragStart);
+    item.addEventListener('dragend', handleDragEnd);
+    // Also support click-to-add for mobile
+    item.addEventListener('click', () => addIngredientToTable(idx, item));
+    list.appendChild(item);
+  });
+
+  // Reset table
+  ingredientsOnTable = [];
+  document.getElementById('prepTable').innerHTML = '<div class="table-label">Prep Table — drag ingredients here</div>';
+  document.getElementById('cookBtn').classList.remove('show');
+  document.getElementById('dishComplete').classList.remove('show');
+  currentStep = 'preparing';
+  showPrompt('Drag ingredients to the prep table!');
+}
+
+function showFoodList() {
+  document.getElementById('navTitle').textContent = 'Choose a Dish';
+  document.getElementById('navBack').classList.remove('show');
+  document.getElementById('foodList').style.display = 'flex';
+  document.getElementById('ingredientList').classList.remove('show');
+  document.getElementById('ingredientList').innerHTML = '';
+  selectedFood = null;
+  ingredientsOnTable = [];
+  document.getElementById('prepTable').innerHTML = '<div class="table-label">Prep Table — drag ingredients here</div>';
+  document.getElementById('cookBtn').classList.remove('show');
+  document.getElementById('dishComplete').classList.remove('show');
+  currentStep = 'select';
+  hidePrompt();
+}
+
+// ─── Drag and Drop ───
+let draggedIdx = null;
+let draggedElement = null;
+
+function handleDragStart(e) {
+  draggedIdx = parseInt(e.target.dataset.idx);
+  draggedElement = e.target;
+  e.target.classList.add('dragging');
+  e.dataTransfer.effectAllowed = 'move';
+}
+
+function handleDragEnd(e) {
+  e.target.classList.remove('dragging');
+}
+
+// Click-to-add for mobile/touch
+function addIngredientToTable(idx, element) {
+  if (element.classList.contains('used')) return;
+  const food = foods[selectedFood];
+  const ing = food.ingredients[idx];
+  if (ingredientsOnTable.some(i => i.idx === idx)) return;
+
+  ingredientsOnTable.push({ idx, ...ing });
+  element.classList.add('used');
+
+  renderTable();
+  checkAllIngredients();
+}
+
+// Desktop drag events
+document.addEventListener('DOMContentLoaded', () => {
+  const table = document.getElementById('prepTable');
+  table.addEventListener('dragover', (e) => { e.preventDefault(); table.classList.add('drop-active'); });
+  table.addEventListener('dragleave', () => table.classList.remove('drop-active'));
+  table.addEventListener('drop', (e) => {
+    e.preventDefault();
+    table.classList.remove('drop-active');
+    if (draggedIdx === null) return;
+    const food = foods[selectedFood];
+    const ing = food.ingredients[draggedIdx];
+    if (ingredientsOnTable.some(i => i.idx === draggedIdx)) return;
+
+    ingredientsOnTable.push({ idx: draggedIdx, ...ing });
+    if (draggedElement) draggedElement.classList.add('used');
+
+    renderTable();
+    checkAllIngredients();
+    draggedIdx = null;
+  });
+});
+
+function renderTable() {
+  const table = document.getElementById('prepTable');
+  let html = '<div class="table-label">Prep Table</div>';
+  ingredientsOnTable.forEach(ing => {
+    html += `<span style="font-size:2rem;" title="${ing.name}">${ing.icon}</span>`;
+  });
+  table.innerHTML = html;
+}
+
+function checkAllIngredients() {
+  const food = foods[selectedFood];
+  if (ingredientsOnTable.length === food.ingredients.length) {
+    currentStep = 'ready_to_cook';
+    showPrompt('All ingredients ready! Click the oven to cook.');
+    document.getElementById('cookBtn').classList.add('show');
+    walkCharTo('table');
+  }
+}
+
+// ─── Cooking ───
+function clickOven() {
+  if (currentStep === 'ready_to_cook') {
+    startCooking();
+  }
+}
+
+function startCooking() {
+  if (currentStep !== 'ready_to_cook') return;
+  currentStep = 'cooking';
+  document.getElementById('cookBtn').classList.remove('show');
+  hidePrompt();
+
+  const food = foods[selectedFood];
+
+  // Walk character to oven
+  walkCharTo('oven');
+
+  // After character reaches oven, start timer
+  setTimeout(() => {
+    // Show food in oven
+    document.getElementById('ovenWindow').textContent = food.icon;
+    document.getElementById('oven').classList.add('oven-active');
+
+    // Start countdown
+    const popup = document.getElementById('timerPopup');
+    const numEl = document.getElementById('timerNum');
+    popup.classList.add('show');
+    let count = 5;
+    numEl.textContent = count;
+
+    const interval = setInterval(() => {
+      count--;
+      numEl.textContent = count;
+      if (count <= 0) {
+        clearInterval(interval);
+        popup.classList.remove('show');
+        playDing();
+        finishCooking();
+      }
+    }, 1000);
+  }, 1500);
+}
+
+function finishCooking() {
+  const food = foods[selectedFood];
+  currentStep = 'done';
+
+  // Walk character back to table
+  walkCharTo('table');
+
+  setTimeout(() => {
+    // Clear oven
+    document.getElementById('ovenWindow').textContent = '🔥';
+    document.getElementById('oven').classList.remove('oven-active');
+
+    // Show completed dish on table
+    const dish = document.getElementById('dishComplete');
+    dish.textContent = food.icon;
+    dish.classList.add('show');
+
+    // Update prep table
+    document.getElementById('prepTable').innerHTML =
+      `<div class="table-label">Prep Table</div><span style="font-size:2.5rem;">${food.icon}</span>`;
+
+    showPrompt(`${food.name} is ready! 🎉 Pick another dish from the menu!`);
+    currentStep = 'select';
+
+    // Re-enable ingredients for next round
+    document.querySelectorAll('.ingredient-item').forEach(item => item.classList.remove('used'));
+    ingredientsOnTable = [];
+  }, 1500);
+}
+
+// ─── Character Movement ───
+function walkCharTo(target) {
+  const char = document.getElementById('kitchenChar');
+  const sprite = document.getElementById('charSprite');
+  const kitchen = document.getElementById('kitchen');
+  const kw = kitchen.offsetWidth;
+
+  sprite.classList.add('walking');
+
+  let targetLeft;
+  if (target === 'oven') {
+    targetLeft = kw - 140; // near oven
+  } else {
+    targetLeft = kw * 0.35; // near table center
+  }
+
+  char.style.left = targetLeft + 'px';
+
+  setTimeout(() => sprite.classList.remove('walking'), 1500);
+}
+
+// ─── Audio (Bell Ding) ───
+let audioCtx = null;
+function playDing() {
+  if (!audioCtx) {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  }
+  const now = audioCtx.currentTime;
+
+  // First ding
+  const osc1 = audioCtx.createOscillator();
+  const gain1 = audioCtx.createGain();
+  osc1.connect(gain1);
+  gain1.connect(audioCtx.destination);
+  osc1.frequency.value = 880;
+  osc1.type = 'sine';
+  gain1.gain.setValueAtTime(0, now);
+  gain1.gain.linearRampToValueAtTime(0.5, now + 0.01);
+  gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
+  osc1.start(now);
+  osc1.stop(now + 0.5);
+
+  // Second ding (slightly lower, delayed)
+  const osc2 = audioCtx.createOscillator();
+  const gain2 = audioCtx.createGain();
+  osc2.connect(gain2);
+  gain2.connect(audioCtx.destination);
+  osc2.frequency.value = 660;
+  osc2.type = 'sine';
+  gain2.gain.setValueAtTime(0, now + 0.15);
+  gain2.gain.linearRampToValueAtTime(0.3, now + 0.16);
+  gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.65);
+  osc2.start(now + 0.15);
+  osc2.stop(now + 0.65);
+}
+
+// ─── Prompts ───
+function showPrompt(text) {
+  const el = document.getElementById('actionPrompt');
+  el.textContent = text;
+  el.classList.add('show');
+}
+function hidePrompt() {
+  document.getElementById('actionPrompt').classList.remove('show');
+}
+</script>
+</body>
+</html>
